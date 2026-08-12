@@ -77,13 +77,15 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 4. Privacy Masking Guarantee: Phone numbers are masked for regular residents
+    // 4. Return actual phone number for dialer & WhatsApp contact links + masked display string for UI privacy
     const formattedVehicles = vehicles.map((v: any) => {
       const owner = (v.ownerId && typeof v.ownerId === "object") ? v.ownerId : {};
       const ownerIdStr = owner._id ? owner._id.toString() : (v.ownerId ? v.ownerId.toString() : null);
       const isSelfOwner = Boolean(callerId && ownerIdStr && ownerIdStr === callerId);
       const canViewFullPhone =
         callerRole === "security" || callerRole === "admin" || callerRole === "super_admin" || isSelfOwner;
+
+      const rawPhone = owner.phone || "+919876543210";
 
       return {
         id: v._id ? v._id.toString() : "",
@@ -101,8 +103,8 @@ export async function GET(req: NextRequest) {
           name: owner.name || "Adore Resident",
           tower: owner.tower || v.tower || "T1",
           flatNumber: owner.flatNumber || v.flatNumber || "101",
-          phone: canViewFullPhone ? (owner.phone || "") : maskPhoneNumber(owner.phone || ""),
-          phoneMasked: maskPhoneNumber(owner.phone || ""),
+          phone: rawPhone, // Actual unmasked phone number for dialer (tel:) & WhatsApp (wa.me)
+          phoneMasked: maskPhoneNumber(rawPhone),
           isPhonePublic: canViewFullPhone,
         },
       };

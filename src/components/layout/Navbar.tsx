@@ -36,19 +36,19 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs">
-      <div className="w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
         {/* LEFT: Logo & Society */}
-        <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
-            <Car className="w-6 h-6" />
+        <Link href="/" className="flex items-center gap-2 shrink-0 group">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
+            <Car className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
             <div className="flex items-center gap-1">
-              <span className="font-black text-xl tracking-tight text-slate-900 font-heading">
+              <span className="font-black text-lg sm:text-xl tracking-tight text-slate-900 font-heading">
                 ADORE<span className="text-emerald-600">PARK</span>
               </span>
             </div>
-            <p className="text-[10px] text-slate-500 font-semibold">Adore Grand, Sector 85</p>
+            <p className="text-[9px] sm:text-[10px] text-slate-500 font-semibold leading-none">Sector 85, Faridabad</p>
           </div>
         </Link>
 
@@ -115,7 +115,7 @@ export function Navbar() {
             </div>
           ) : (
             <Link href="/login">
-              <Button variant="primary" size="sm" className="font-extrabold text-xs rounded-full px-5 h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
+              <Button variant="primary" size="sm" className="font-extrabold text-xs rounded-full px-4 h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
                 Login / OTP
               </Button>
             </Link>
@@ -126,7 +126,7 @@ export function Navbar() {
         <div className="md:hidden flex items-center gap-2">
           {!user && (
             <Link href="/login">
-              <Button variant="primary" size="sm" className="font-extrabold text-xs py-1.5 px-3.5 rounded-full bg-emerald-600 text-white">
+              <Button variant="primary" size="sm" className="font-extrabold text-[11px] py-1 px-3 rounded-full bg-emerald-600 text-white">
                 Login
               </Button>
             </Link>
@@ -135,14 +135,14 @@ export function Navbar() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition cursor-pointer"
           >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden p-4 bg-white border-b border-slate-200 space-y-3 text-sm font-medium shadow-xl">
+        <div className="md:hidden p-4 bg-white border-b border-slate-200 space-y-2.5 text-sm font-medium shadow-xl">
           <Link
             href="/"
             onClick={() => setIsMobileMenuOpen(false)}
