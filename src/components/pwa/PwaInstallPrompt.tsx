@@ -1,27 +1,38 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Car, Smartphone, X, Plus } from "lucide-react";
+import { Smartphone, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
+let globalDeferredPrompt: any = null;
+
+export function triggerPwaInstallPrompt() {
+  if (globalDeferredPrompt) {
+    globalDeferredPrompt.prompt();
+    globalDeferredPrompt.userChoice.then((choice: any) => {
+      console.log("User PWA choice:", choice.outcome);
+    });
+  } else {
+    alert(
+      "To add AdorePark shortcut to your phone home screen:\n\n1. Tap your browser menu (⋮ on Chrome, or Share icon on Safari)\n2. Select 'Add to Home Screen' / 'Install App'."
+    );
+  }
+}
+
 export function PwaInstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
-    // 1. Listen for PWA BeforeInstallPrompt event
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      globalDeferredPrompt = e;
 
-      // Check if user previously dismissed prompt
       const dismissedAt = localStorage.getItem("adorepark_pwa_dismissed");
       if (dismissedAt) {
         const daysSince = (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 3600 * 24);
-        if (daysSince < 7) return; // Don't show again for 7 days
+        if (daysSince < 7) return;
       }
 
-      // Show after meaningful interaction (delay 4 seconds or after first click)
       const timer = setTimeout(() => {
         setShowPrompt(true);
       }, 4000);
@@ -31,12 +42,11 @@ export function PwaInstallPrompt() {
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
-    // 2. Register Service Worker for PWA capabilities
     if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
       navigator.serviceWorker
         .register("/sw.js")
-        .then((reg) => console.log("AdorePark Service Worker registered:", reg.scope))
-        .catch((err) => console.warn("Service Worker registration warning:", err));
+        .then((reg) => console.log("AdorePark SW registered:", reg.scope))
+        .catch((err) => console.warn("SW warning:", err));
     }
 
     return () => {
@@ -44,19 +54,8 @@ export function PwaInstallPrompt() {
     };
   }, []);
 
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) {
-      alert("To add AdorePark shortcut to your home screen: Tap your browser menu (⋮ or share icon) and select 'Add to Home Screen'.");
-      setShowPrompt(false);
-      return;
-    }
-
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") {
-      console.log("User accepted AdorePark PWA installation");
-    }
-    setDeferredPrompt(null);
+  const handleInstallClick = () => {
+    triggerPwaInstallPrompt();
     setShowPrompt(false);
   };
 
@@ -69,15 +68,15 @@ export function PwaInstallPrompt() {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-50 animate-in slide-in-from-bottom duration-300">
-      <div className="p-4 rounded-2xl bg-slate-900/95 border-2 border-emerald-500/50 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-3 text-xs">
+      <div className="p-4 rounded-2xl bg-slate-900 border-2 border-emerald-500 text-white shadow-2xl flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/40 shrink-0">
             <Smartphone className="w-6 h-6" />
           </div>
           <div>
             <h4 className="font-extrabold text-white text-sm">Add AdorePark to your phone</h4>
             <p className="text-slate-300 text-[11px] mt-0.5">
-              Quick 1-tap home screen shortcut for Adore Grand parking coordination
+              Quick 1-tap home screen shortcut for Adore Grand
             </p>
           </div>
         </div>
@@ -87,10 +86,9 @@ export function PwaInstallPrompt() {
             variant="primary"
             size="sm"
             onClick={handleInstallClick}
-            className="whitespace-nowrap font-bold text-xs shadow-md shadow-emerald-600/30"
+            className="whitespace-nowrap font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
           >
-            <Plus className="w-3.5 h-3.5" />
-            Add Shortcut
+            <Plus className="w-3.5 h-3.5" /> Add
           </Button>
 
           <button

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Car, ShieldCheck, User, LogOut, MapPin, Menu, X, Bell, ChevronDown } from "lucide-react";
+import { Car, ShieldCheck, User, LogOut, MapPin, Menu, X, Bell, PhoneCall, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export function Navbar() {
@@ -53,7 +53,7 @@ export function Navbar() {
         </Link>
 
         {/* CENTER: Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-7 text-xs font-bold text-slate-600">
+        <nav className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-600">
           <Link
             href="/"
             className={`transition hover:text-emerald-600 ${pathname === "/" ? "text-emerald-600 font-black border-b-2 border-emerald-600 pb-0.5" : ""}`}
@@ -79,29 +79,26 @@ export function Navbar() {
             My Vehicles
           </Link>
           <Link
-            href="/dashboard"
-            className="transition hover:text-emerald-600"
+            href="/announcements"
+            className={`transition hover:text-emerald-600 ${pathname === "/announcements" ? "text-emerald-600 font-black border-b-2 border-emerald-600 pb-0.5" : ""}`}
           >
-            Requests
+            Announcements
+          </Link>
+          <Link
+            href="/emergency"
+            className={`transition hover:text-rose-600 ${pathname === "/emergency" ? "text-rose-600 font-black border-b-2 border-rose-600 pb-0.5" : ""}`}
+          >
+            Emergency Contacts
           </Link>
         </nav>
 
-        {/* RIGHT: Location, Role & Login */}
+        {/* RIGHT: Location & User Login */}
         <div className="hidden sm:flex items-center gap-2.5 shrink-0">
-          {/* Location Pill */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-700">
             <MapPin className="w-3.5 h-3.5 text-emerald-600" />
             <span>Sector 85, Faridabad</span>
           </div>
 
-          {/* Role Selector Pill */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-700">
-            <User className="w-3.5 h-3.5 text-slate-500" />
-            <span>{user ? user.role : "Resident"}</span>
-            <ChevronDown className="w-3 h-3 text-slate-400" />
-          </div>
-
-          {/* Login / OTP Button */}
           {user ? (
             <div className="flex items-center gap-2">
               <Link href="/dashboard" className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800">
@@ -125,7 +122,7 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Mobile Hamburger Toggle Button */}
+        {/* Mobile Toggle Button */}
         <div className="lg:hidden flex items-center gap-2">
           {!user && (
             <Link href="/login">
@@ -143,7 +140,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden p-4 bg-white border-b border-slate-200 space-y-3 text-sm font-medium shadow-xl">
           <Link
@@ -153,24 +150,20 @@ export function Navbar() {
           >
             Home
           </Link>
-          <button
-            onClick={() => {
-              setIsMobileMenuOpen(false);
-              scrollToSearch();
-            }}
-            className="block w-full text-left px-3.5 py-2.5 rounded-xl text-slate-800 font-bold hover:bg-slate-50"
+          <Link
+            href="/announcements"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block px-3.5 py-2.5 rounded-xl text-amber-800 font-bold hover:bg-amber-50 flex items-center gap-2"
           >
-            Find Vehicle
-          </button>
-          <button
-            onClick={() => {
-              setIsMobileMenuOpen(false);
-              scrollToSearch();
-            }}
-            className="block w-full text-left px-3.5 py-2.5 rounded-xl text-rose-700 font-bold hover:bg-rose-50"
+            <Megaphone className="w-4 h-4 text-amber-600" /> Society Announcements
+          </Link>
+          <Link
+            href="/emergency"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block px-3.5 py-2.5 rounded-xl text-rose-800 font-bold hover:bg-rose-50 flex items-center gap-2"
           >
-            I'm Blocked
-          </button>
+            <PhoneCall className="w-4 h-4 text-rose-600" /> Emergency & Maintenance Contacts
+          </Link>
           <Link
             href="/dashboard"
             onClick={() => setIsMobileMenuOpen(false)}

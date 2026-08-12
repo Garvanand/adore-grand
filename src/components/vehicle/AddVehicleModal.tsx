@@ -41,6 +41,7 @@ export function AddVehicleModal({
   const [flatNumber, setFlatNumber] = useState("");
   const [parkingZone, setParkingZone] = useState("Park Boundary");
   const [ownerName, setOwnerName] = useState("");
+  const [phone, setPhone] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -54,8 +55,8 @@ export function AddVehicleModal({
   const zones = ["Towers", "Mandir", "Park Boundary", "Other"];
 
   const handleRegister = async () => {
-    if (!plateNumber.trim() || !makeModel.trim() || !flatNumber.trim() || !ownerName.trim()) {
-      setErrorMsg("Please fill in Registration Plate, Model, Flat Number, and Resident Name.");
+    if (!plateNumber.trim() || !makeModel.trim() || !flatNumber.trim() || !ownerName.trim() || !phone.trim()) {
+      setErrorMsg("Please fill in Registration Plate, Model, Flat Number, Owner Name, and Mobile Number.");
       return;
     }
 
@@ -74,6 +75,8 @@ export function AddVehicleModal({
           tower,
           flatNumber: flatNumber.trim(),
           parkingZone,
+          ownerName: ownerName.trim(),
+          phone: phone.trim(),
         }),
       });
 
@@ -100,6 +103,7 @@ export function AddVehicleModal({
     setFlatNumber("");
     setParkingZone("Park Boundary");
     setOwnerName("");
+    setPhone("");
     setErrorMsg("");
     onClose();
   };
@@ -145,7 +149,7 @@ export function AddVehicleModal({
           </div>
         )}
 
-        {/* STEP 1: VEHICLE & OWNER SPECS */}
+        {/* STEP 1: VEHICLE & OWNER SPECS WITH PHONE */}
         {step === 1 && (
           <div className="space-y-4">
             <div>
@@ -197,7 +201,7 @@ export function AddVehicleModal({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-black text-slate-900 mb-1">
-                  Resident Name *
+                  Resident Full Name *
                 </label>
                 <input
                   type="text"
@@ -210,22 +214,35 @@ export function AddVehicleModal({
 
               <div>
                 <label className="block text-xs font-black text-slate-900 mb-1">
-                  Vehicle Colour
+                  Mobile Contact No. * (फोन नंबर)
                 </label>
                 <input
-                  type="text"
-                  placeholder="e.g. White / Silver"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  className="w-full px-3.5 h-12 text-xs rounded-xl bg-slate-50 border border-slate-300 font-bold focus:outline-none"
+                  type="tel"
+                  placeholder="e.g. 9876543210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-3.5 h-12 text-xs font-mono rounded-xl bg-slate-50 border border-slate-300 font-bold focus:outline-none"
                 />
               </div>
             </div>
 
+            <div>
+              <label className="block text-xs font-black text-slate-900 mb-1">
+                Vehicle Colour
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. White / Silver"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="w-full px-3.5 h-12 text-xs rounded-xl bg-slate-50 border border-slate-300 font-bold focus:outline-none"
+              />
+            </div>
+
             <Button
               onClick={() => {
-                if (!plateNumber.trim() || !makeModel.trim() || !ownerName.trim()) {
-                  setErrorMsg("Please fill in Registration Plate, Model, and Resident Name.");
+                if (!plateNumber.trim() || !makeModel.trim() || !ownerName.trim() || !phone.trim()) {
+                  setErrorMsg("Please fill in Registration Plate, Model, Resident Name, and Mobile Number.");
                   return;
                 }
                 setErrorMsg("");
@@ -315,7 +332,7 @@ export function AddVehicleModal({
           </div>
         )}
 
-        {/* STEP 3: PLEASANT SUCCESS SCREEN */}
+        {/* STEP 3: SUCCESS SCREEN */}
         {step === 3 && (
           <div className="space-y-5 text-center py-4 animate-in zoom-in-95 duration-200">
             <div className="w-20 h-20 rounded-full bg-emerald-100 border-4 border-emerald-500 text-emerald-600 flex items-center justify-center mx-auto shadow-md">

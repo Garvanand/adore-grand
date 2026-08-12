@@ -25,6 +25,8 @@ import {
   Settings as SettingsIcon,
   Bell,
   QrCode,
+  Megaphone,
+  Pin,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -36,7 +38,7 @@ import { formatPlateNumber, formatDateTime, timeAgo } from "@/lib/utils";
 
 export function AdminCommandCenter() {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "incidents" | "vehicles" | "residents" | "security" | "qr" | "audit" | "settings"
+    "overview" | "incidents" | "vehicles" | "residents" | "security" | "announcements" | "qr" | "audit" | "settings"
   >("overview");
 
   // KPI Metrics State
@@ -67,8 +69,17 @@ export function AdminCommandCenter() {
   const [totalResidentPages, setTotalResidentPages] = useState(1);
   const [residentSearch, setResidentSearch] = useState("");
 
-  // Audit Logs State (Paginated)
+  // Audit Logs State
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+
+  // Announcements State
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [annTitle, setAnnTitle] = useState("");
+  const [annContent, setAnnContent] = useState("");
+  const [annCategory, setAnnCategory] = useState("general");
+  const [annIsPinned, setAnnIsPinned] = useState(false);
+  const [isPostingAnn, setIsPostingAnn] = useState(false);
+  const [annMsg, setAnnMsg] = useState("");
 
   // Security Staff Modal State
   const [isAddGuardOpen, setIsAddGuardOpen] = useState(false);
@@ -132,13 +143,62 @@ export function AdminCommandCenter() {
     }
   };
 
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await fetch("/api/announcements");
+      const data = await res.json();
+      if (data.success) setAnnouncements(data.announcements || []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     fetchMetrics();
     fetchIncidents();
     fetchVehicles(vehiclePage, vehicleSearch);
     fetchResidents(residentPage, residentSearch);
     fetchAuditLogs();
+    fetchAnnouncements();
   }, []);
+
+  const handlePostAnnouncement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!annTitle.trim() || !annContent.trim()) {
+      setAnnMsg("Please enter Title and Content.");
+      return;
+    }
+
+    setIsPostingAnn(true);
+    setAnnMsg("");
+
+    try {
+      const res = await fetch("/api/announcements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: annTitle.trim(),
+          content: annContent.trim(),
+          category: annCategory,
+          isPinned: annIsPinned,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setAnnTitle("");
+        setAnnContent("");
+        setAnnMsg("Announcement published successfully to portal.");
+        fetchAnnouncements();
+      } else {
+        setAnnMsg(data.message || "Failed to post announcement.");
+      }
+    } catch (err) {
+      setAnnMsg("Connection error.");
+    } finally {
+      setIsPostingAnn(false);
+    }
+  };
 
   const handleSearchVehicles = (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,7 +226,6 @@ export function AdminCommandCenter() {
         setIsAddGuardOpen(false);
         setGuardName("");
         setGuardPhone("");
-        fetchResidents(residentPage, residentSearch);
         fetchMetrics();
       }
     } catch (e) {
@@ -176,26 +235,9 @@ export function AdminCommandCenter() {
     }
   };
 
-  const handleToggleUserStatus = async (userId: string, currentStatus: string) => {
+  const handleResolveIncident = async (incidentId: string) => {
     try {
-      const newStatus = currentStatus === "active" ? "suspended" : "active";
-      const res = await fetch("/api/admin/users", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, status: newStatus }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        fetchResidents(residentPage, residentSearch);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleIncidentAction = async (incidentId: string, actionEndpoint: string) => {
-    try {
-      const res = await fetch(`/api/incidents/${incidentId}/${actionEndpoint}`, {
+      const res = await fetch(`/api/incidents/${incidentId}/resolve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -214,66 +256,66 @@ export function AdminCommandCenter() {
   );
 
   return (
-    <div className="space-y-6 py-2">
+    <div className="space-y-6 py-2 text-slate-900">
       {/* Overview KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-1 shadow-lg">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-1 shadow-sm">
+          <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider block">
             Total Vehicles
           </span>
-          <div className="text-2xl font-black text-white flex items-center justify-between">
+          <div className="text-2xl font-black text-slate-900 flex items-center justify-between font-mono">
             <span>{metrics.totalVehicles}</span>
-            <Car className="w-5 h-5 text-emerald-400" />
+            <Car className="w-5 h-5 text-emerald-600" />
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-rose-950/30 border border-rose-800/60 space-y-1 shadow-lg">
-          <span className="text-[11px] font-bold text-rose-400 uppercase tracking-wider block">
+        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 space-y-1 shadow-sm">
+          <span className="text-[11px] font-extrabold text-rose-800 uppercase tracking-wider block">
             Active Incidents
           </span>
-          <div className="text-2xl font-black text-rose-100 flex items-center justify-between">
+          <div className="text-2xl font-black text-rose-900 flex items-center justify-between font-mono">
             <span>{metrics.activeIncidents}</span>
-            <ShieldAlert className="w-5 h-5 text-rose-400 animate-pulse" />
+            <ShieldAlert className="w-5 h-5 text-rose-600 animate-pulse" />
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-1 shadow-lg">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-1 shadow-sm">
+          <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider block">
             Incidents Today
           </span>
-          <div className="text-2xl font-black text-slate-100 flex items-center justify-between">
+          <div className="text-2xl font-black text-slate-900 flex items-center justify-between font-mono">
             <span>{metrics.incidentsToday}</span>
-            <Activity className="w-5 h-5 text-amber-400" />
+            <Activity className="w-5 h-5 text-amber-600" />
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-1 shadow-lg">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-1 shadow-sm">
+          <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider block">
             Avg Resolution
           </span>
-          <div className="text-2xl font-black text-emerald-400 flex items-center justify-between">
+          <div className="text-2xl font-black text-emerald-700 flex items-center justify-between font-mono">
             <span>{metrics.avgResolutionMinutes} mins</span>
-            <Clock className="w-5 h-5 text-emerald-400" />
+            <Clock className="w-5 h-5 text-emerald-600" />
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-rose-950/40 border border-rose-800/60 space-y-1 shadow-lg">
-          <span className="text-[11px] font-bold text-rose-400 uppercase tracking-wider block">
+        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 space-y-1 shadow-sm">
+          <span className="text-[11px] font-extrabold text-rose-800 uppercase tracking-wider block">
             Escalations
           </span>
-          <div className="text-2xl font-black text-rose-300 flex items-center justify-between">
+          <div className="text-2xl font-black text-rose-900 flex items-center justify-between font-mono">
             <span>{metrics.escalatedIncidents}</span>
-            <AlertTriangle className="w-5 h-5 text-rose-500" />
+            <AlertTriangle className="w-5 h-5 text-rose-600" />
           </div>
         </div>
       </div>
 
       {/* Navigation Tab Bar */}
-      <div className="flex items-center gap-1 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 overflow-x-auto scrollbar-none">
+      <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 overflow-x-auto scrollbar-none">
         <button
           onClick={() => setActiveTab("overview")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-            activeTab === "overview" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-white"
+          className={`px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 ${
+            activeTab === "overview" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-700 hover:bg-slate-200"
           }`}
         >
           <Activity className="w-4 h-4" /> Overview
@@ -281,8 +323,8 @@ export function AdminCommandCenter() {
 
         <button
           onClick={() => setActiveTab("incidents")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-            activeTab === "incidents" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-white"
+          className={`px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 ${
+            activeTab === "incidents" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-700 hover:bg-slate-200"
           }`}
         >
           <ShieldAlert className="w-4 h-4" /> Active Incidents ({activeIncidentsList.length})
@@ -290,8 +332,8 @@ export function AdminCommandCenter() {
 
         <button
           onClick={() => setActiveTab("vehicles")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-            activeTab === "vehicles" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-white"
+          className={`px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 ${
+            activeTab === "vehicles" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-700 hover:bg-slate-200"
           }`}
         >
           <Car className="w-4 h-4" /> Vehicles
@@ -299,500 +341,231 @@ export function AdminCommandCenter() {
 
         <button
           onClick={() => setActiveTab("residents")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-            activeTab === "residents" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-white"
+          className={`px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 ${
+            activeTab === "residents" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-700 hover:bg-slate-200"
           }`}
         >
           <Users className="w-4 h-4" /> Residents
         </button>
 
         <button
-          onClick={() => setActiveTab("security")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-            activeTab === "security" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-white"
+          onClick={() => setActiveTab("announcements")}
+          className={`px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 ${
+            activeTab === "announcements" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-700 hover:bg-slate-200"
           }`}
         >
-          <Shield className="w-4 h-4" /> Security Staff
+          <Megaphone className="w-4 h-4 text-amber-500" /> Announcements Studio
+        </button>
+
+        <button
+          onClick={() => setActiveTab("security")}
+          className={`px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 ${
+            activeTab === "security" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-700 hover:bg-slate-200"
+          }`}
+        >
+          <Shield className="w-4 h-4" /> Security Duty
         </button>
 
         <button
           onClick={() => setActiveTab("qr")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-            activeTab === "qr" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-white"
+          className={`px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 ${
+            activeTab === "qr" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-700 hover:bg-slate-200"
           }`}
         >
-          <QrCode className="w-4 h-4 text-emerald-400" /> QR Posters
+          <QrCode className="w-4 h-4" /> QR Posters
         </button>
 
         <button
           onClick={() => setActiveTab("audit")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-            activeTab === "audit" ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-white"
+          className={`px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-2 ${
+            activeTab === "audit" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-700 hover:bg-slate-200"
           }`}
         >
           <FileText className="w-4 h-4" /> Audit Logs
         </button>
       </div>
 
-      {/* TAB: QR POSTERS GENERATOR */}
+      {/* TAB CONTENT: ANNOUNCEMENTS STUDIO (Super Admin Only) */}
+      {activeTab === "announcements" && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* LEFT 5 COLS: CREATE ANNOUNCEMENT FORM */}
+          <div className="lg:col-span-5 space-y-4">
+            <Card className="border-slate-200 bg-white shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-slate-900">
+                  <Megaphone className="w-5 h-5 text-emerald-600" />
+                  Post New Society Notice
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="p-5 space-y-4">
+                {annMsg && (
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 font-bold">
+                    {annMsg}
+                  </div>
+                )}
+
+                <form onSubmit={handlePostAnnouncement} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-black text-slate-900 mb-1">
+                      Announcement Title *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Basement B1 Cleaning Schedule"
+                      value={annTitle}
+                      onChange={(e) => setAnnTitle(e.target.value)}
+                      className="w-full px-3.5 h-11 text-xs rounded-xl bg-slate-50 border border-slate-300 font-bold focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black text-slate-900 mb-1">
+                      Notice Category
+                    </label>
+                    <select
+                      value={annCategory}
+                      onChange={(e) => setAnnCategory(e.target.value)}
+                      className="w-full px-3 h-11 rounded-xl bg-slate-50 border border-slate-300 text-xs font-bold focus:outline-none"
+                    >
+                      <option value="general">General Society Notice</option>
+                      <option value="parking">Parking & Vehicles</option>
+                      <option value="maintenance">Basement & Lift Maintenance</option>
+                      <option value="urgent">Urgent Security Alert</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black text-slate-900 mb-1">
+                      Detailed Content *
+                    </label>
+                    <textarea
+                      rows={5}
+                      required
+                      placeholder="Enter detailed notice content for Adore Grand residents..."
+                      value={annContent}
+                      onChange={(e) => setAnnContent(e.target.value)}
+                      className="w-full p-3 text-xs rounded-xl bg-slate-50 border border-slate-300 font-medium focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="pinCheck"
+                      checked={annIsPinned}
+                      onChange={(e) => setAnnIsPinned(e.target.checked)}
+                      className="w-4 h-4 text-emerald-600 rounded"
+                    />
+                    <label htmlFor="pinCheck" className="text-xs font-bold text-slate-700 cursor-pointer">
+                      Pin Notice to top of Announcements page
+                    </label>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="md"
+                    className="w-full h-12 font-black text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                    isLoading={isPostingAnn}
+                  >
+                    Publish Notice to Portal
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* RIGHT 7 COLS: RECENT ANNOUNCEMENTS */}
+          <div className="lg:col-span-7 space-y-4">
+            <h3 className="text-lg font-black text-slate-900 font-heading">
+              PUBLISHED ANNOUNCEMENTS ({announcements.length})
+            </h3>
+
+            {announcements.length === 0 ? (
+              <div className="p-8 text-center bg-white border border-slate-200 rounded-3xl text-slate-500 font-bold text-xs">
+                No announcements published yet.
+              </div>
+            ) : (
+              announcements.map((a) => (
+                <Card key={a.id} className="border-slate-200 bg-white shadow-xs">
+                  <CardContent className="p-5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant={a.category === "urgent" ? "danger" : "info"}>
+                        {a.category.toUpperCase()}
+                      </Badge>
+                      <span className="text-[11px] font-mono text-slate-400">
+                        {formatDateTime(a.createdAt)}
+                      </span>
+                    </div>
+
+                    <h4 className="text-base font-black text-slate-900">{a.title}</h4>
+                    <p className="text-xs text-slate-600 font-medium whitespace-pre-line">{a.content}</p>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* OVERVIEW TAB */}
+      {activeTab === "overview" && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-8 space-y-4">
+            <h3 className="text-lg font-black text-slate-900 font-heading">ACTIVE INCIDENTS BOARD</h3>
+            {activeIncidentsList.length === 0 ? (
+              <Card className="border-slate-200 bg-emerald-50/40 p-8 text-center">
+                <CardContent className="flex flex-col items-center space-y-2">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                  <h4 className="text-base font-bold text-slate-800">All Society Parking Zones Clear</h4>
+                </CardContent>
+              </Card>
+            ) : (
+              activeIncidentsList.map((inc) => (
+                <Card key={inc.id} className="border-rose-200 bg-white shadow-sm">
+                  <CardContent className="p-4 flex items-center justify-between gap-4">
+                    <div>
+                      <span className="font-mono font-black text-lg text-slate-900">
+                        {formatPlateNumber(inc.vehiclePlate)}
+                      </span>
+                      <p className="text-xs text-slate-500 font-bold">{inc.location} • {timeAgo(inc.reportedAt)}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      className="font-bold text-xs rounded-xl bg-emerald-600 text-white"
+                      onClick={() => handleResolveIncident(inc.id)}
+                    >
+                      Resolve Incident
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+
+          <div className="lg:col-span-4 space-y-4">
+            <h3 className="text-lg font-black text-slate-900 font-heading">QUICK ACTIONS</h3>
+            <Card className="border-slate-200 bg-white p-4 space-y-3">
+              <a href="/api/admin/credentials/export?format=csv" download className="block w-full">
+                <Button variant="outline" size="sm" className="w-full font-bold text-xs rounded-xl border-slate-300">
+                  Export Staff Credentials (CSV)
+                </Button>
+              </a>
+              <a href="/api/admin/credentials/export?format=txt" download className="block w-full">
+                <Button variant="outline" size="sm" className="w-full font-bold text-xs rounded-xl border-slate-300">
+                  Export Staff Credentials (TXT)
+                </Button>
+              </a>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* QR POSTERS TAB */}
       {activeTab === "qr" && <QrPosterGenerator />}
-
-      {/* TAB 1: OVERVIEW & ACTIVE INCIDENT BOARD */}
-      {(activeTab === "overview" || activeTab === "incidents") && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-xl text-rose-400 flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5" />
-              Live Active Incident Board ({activeIncidentsList.length})
-            </CardTitle>
-            <Button variant="outline" size="sm" onClick={fetchIncidents}>
-              Refresh Stream
-            </Button>
-          </CardHeader>
-
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-950 border-y border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
-                    <th className="p-4">Vehicle Plate</th>
-                    <th className="p-4">Flat / Owner</th>
-                    <th className="p-4">Location</th>
-                    <th className="p-4">Reported</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4">Duty Security</th>
-                    <th className="p-4 text-right">Operational Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60">
-                  {activeIncidentsList.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="p-8 text-center text-slate-500 font-medium">
-                        No active parking blockages reported right now.
-                      </td>
-                    </tr>
-                  ) : (
-                    activeIncidentsList.map((inc) => (
-                      <tr key={inc.id} className="hover:bg-slate-900/60 transition">
-                        <td className="p-4 font-mono font-black text-sm text-white">
-                          {formatPlateNumber(inc.plateNumber)}
-                        </td>
-                        <td className="p-4">
-                          <span className="font-bold text-slate-200 block">
-                            {inc.owner ? inc.owner.name : "Unregistered Owner"}
-                          </span>
-                          <span className="text-[11px] text-emerald-400">
-                            {inc.owner ? `${inc.owner.tower} - ${inc.owner.flatNumber}` : "Visitor"}
-                          </span>
-                        </td>
-                        <td className="p-4 font-medium text-slate-300">{inc.location}</td>
-                        <td className="p-4 font-mono text-slate-400">{timeAgo(inc.createdAt)}</td>
-                        <td className="p-4">
-                          <Badge
-                            variant={
-                              inc.status === "ESCALATED" || inc.status === "escalated"
-                                ? "danger"
-                                : inc.status === "CONTACTED" || inc.status === "REMINDER_SENT"
-                                ? "warning"
-                                : "info"
-                            }
-                          >
-                            {inc.status}
-                          </Badge>
-                        </td>
-                        <td className="p-4 font-medium text-slate-400">
-                          {inc.resolvedBy || "Gate 1 Guard"}
-                        </td>
-                        <td className="p-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedIncident(inc);
-                                setIsTimelineModalOpen(true);
-                              }}
-                              className="text-xs"
-                            >
-                              Timeline
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleIncidentAction(inc.id, "reminder")}
-                              className="text-xs border-slate-700 text-amber-400"
-                            >
-                              Remind
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => handleIncidentAction(inc.id, "escalate")}
-                              className="text-xs"
-                            >
-                              Escalate
-                            </Button>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => handleIncidentAction(inc.id, "resolve")}
-                              className="text-xs"
-                            >
-                              Resolve
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* TAB 3: VEHICLES MANAGEMENT */}
-      {activeTab === "vehicles" && (
-        <Card>
-          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <CardTitle className="text-xl text-emerald-400 flex items-center gap-2">
-              <Car className="w-5 h-5" />
-              Registered Vehicles Database
-            </CardTitle>
-
-            <form onSubmit={handleSearchVehicles} className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Search plate, make, flat..."
-                value={vehicleSearch}
-                onChange={(e) => setVehicleSearch(e.target.value)}
-                className="px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-100 focus:outline-none focus:border-emerald-500"
-              />
-              <Button type="submit" variant="primary" size="sm">
-                <Search className="w-3.5 h-3.5" />
-              </Button>
-            </form>
-          </CardHeader>
-
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-950 border-y border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
-                    <th className="p-4">Plate Number</th>
-                    <th className="p-4">Type & Model</th>
-                    <th className="p-4">Resident Owner</th>
-                    <th className="p-4">Tower & Flat</th>
-                    <th className="p-4">Slot / Pass</th>
-                    <th className="p-4">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60">
-                  {vehicles.map((v) => (
-                    <tr key={v.id} className="hover:bg-slate-900/60 transition">
-                      <td className="p-4 font-mono font-black text-sm text-slate-100">
-                        {formatPlateNumber(v.plateNumber)}
-                      </td>
-                      <td className="p-4 font-medium text-slate-300">{v.makeModel} ({v.vehicleType})</td>
-                      <td className="p-4 font-bold text-slate-200">
-                        {v.owner ? v.owner.name : "N/A"}
-                      </td>
-                      <td className="p-4 font-medium text-emerald-400">{v.tower} - Flat {v.flatNumber}</td>
-                      <td className="p-4 font-mono text-slate-400">{v.parkingSlot || "Slot B1"}</td>
-                      <td className="p-4">
-                        <Badge variant={v.status === "active" ? "success" : "neutral"}>
-                          {v.status}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination Controls */}
-            <div className="p-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-              <span>Page {vehiclePage} of {totalVehiclePages}</span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={vehiclePage <= 1}
-                  onClick={() => {
-                    setVehiclePage(vehiclePage - 1);
-                    fetchVehicles(vehiclePage - 1, vehicleSearch);
-                  }}
-                >
-                  <ChevronLeft className="w-4 h-4" /> Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={vehiclePage >= totalVehiclePages}
-                  onClick={() => {
-                    setVehiclePage(vehiclePage + 1);
-                    fetchVehicles(vehiclePage + 1, vehicleSearch);
-                  }}
-                >
-                  Next <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* TAB 4: RESIDENTS MANAGEMENT */}
-      {activeTab === "residents" && (
-        <Card>
-          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <CardTitle className="text-xl text-emerald-400 flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Resident & User Directory
-            </CardTitle>
-
-            <form onSubmit={handleSearchResidents} className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Search name, phone, flat..."
-                value={residentSearch}
-                onChange={(e) => setResidentSearch(e.target.value)}
-                className="px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-100 focus:outline-none focus:border-emerald-500"
-              />
-              <Button type="submit" variant="primary" size="sm">
-                <Search className="w-3.5 h-3.5" />
-              </Button>
-            </form>
-          </CardHeader>
-
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-950 border-y border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
-                    <th className="p-4">Resident Name</th>
-                    <th className="p-4">Phone</th>
-                    <th className="p-4">Tower & Flat</th>
-                    <th className="p-4">Role</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4 text-right">Account Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60">
-                  {residents.map((r) => (
-                    <tr key={r.id} className="hover:bg-slate-900/60 transition">
-                      <td className="p-4 font-bold text-slate-100">{r.name}</td>
-                      <td className="p-4 font-mono text-slate-400">{r.phone}</td>
-                      <td className="p-4 font-medium text-emerald-400">{r.tower} - Flat {r.flatNumber}</td>
-                      <td className="p-4">
-                        <Badge variant="neutral">{r.role}</Badge>
-                      </td>
-                      <td className="p-4">
-                        <Badge variant={r.status === "active" ? "success" : "danger"}>
-                          {r.status}
-                        </Badge>
-                      </td>
-                      <td className="p-4 text-right">
-                        <Button
-                          variant={r.status === "active" ? "danger" : "primary"}
-                          size="sm"
-                          onClick={() => handleToggleUserStatus(r.id, r.status)}
-                          className="text-xs"
-                        >
-                          {r.status === "active" ? "Deactivate Account" : "Reactivate"}
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination Controls */}
-            <div className="p-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-              <span>Page {residentPage} of {totalResidentPages}</span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={residentPage <= 1}
-                  onClick={() => {
-                    setResidentPage(residentPage - 1);
-                    fetchResidents(residentPage - 1, residentSearch);
-                  }}
-                >
-                  <ChevronLeft className="w-4 h-4" /> Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={residentPage >= totalResidentPages}
-                  onClick={() => {
-                    setResidentPage(residentPage + 1);
-                    fetchResidents(residentPage + 1, residentSearch);
-                  }}
-                >
-                  Next <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* TAB 5: SECURITY STAFF MANAGEMENT */}
-      {activeTab === "security" && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-xl text-rose-400 flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Security Guard Duty Roster
-            </CardTitle>
-            <Button variant="primary" size="sm" onClick={() => setIsAddGuardOpen(true)}>
-              <Plus className="w-4 h-4" /> Add Security Officer
-            </Button>
-          </CardHeader>
-
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-950 border-y border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
-                    <th className="p-4">Guard Name</th>
-                    <th className="p-4">Duty Phone</th>
-                    <th className="p-4">Duty Station</th>
-                    <th className="p-4">Role</th>
-                    <th className="p-4">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60">
-                  {residents
-                    .filter((u) => u.role === "security")
-                    .map((guard) => (
-                      <tr key={guard.id} className="hover:bg-slate-900/60 transition">
-                        <td className="p-4 font-bold text-slate-100">{guard.name}</td>
-                        <td className="p-4 font-mono text-emerald-400">{guard.phone}</td>
-                        <td className="p-4 font-medium text-slate-300">{guard.tower} ({guard.flatNumber})</td>
-                        <td className="p-4">
-                          <Badge variant="danger">{guard.role}</Badge>
-                        </td>
-                        <td className="p-4">
-                          <Badge variant="success">{guard.status}</Badge>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* TAB 6: AUDIT LOGS */}
-      {activeTab === "audit" && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl text-emerald-400 flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Security & Administrative Audit Log Trail
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-950 border-y border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
-                    <th className="p-4">Timestamp</th>
-                    <th className="p-4">Actor</th>
-                    <th className="p-4">Action</th>
-                    <th className="p-4">Target Type</th>
-                    <th className="p-4">Details</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60">
-                  {auditLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-900/60 transition">
-                      <td className="p-4 font-mono text-slate-400">{formatDateTime(log.createdAt)}</td>
-                      <td className="p-4 font-medium text-slate-200">
-                        {log.actor.name} ({log.actor.role})
-                      </td>
-                      <td className="p-4">
-                        <Badge variant="info">{log.action}</Badge>
-                      </td>
-                      <td className="p-4 font-mono text-slate-300 capitalize">{log.targetType}</td>
-                      <td className="p-4 font-mono text-[11px] text-slate-400 max-w-xs truncate">
-                        {JSON.stringify(log.details)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Add Security Guard Modal */}
-      <Modal
-        isOpen={isAddGuardOpen}
-        onClose={() => setIsAddGuardOpen(false)}
-        title="Add Security Guard"
-        subtitle="Provision duty access for Gate 1 / Gate 2 security guards"
-      >
-        <form onSubmit={handleAddGuard} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-200 mb-1">Security Officer Name *</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Ramesh Kumar (Gate 1)"
-              value={guardName}
-              onChange={(e) => setGuardName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-200 mb-1">Duty Phone Number *</label>
-            <input
-              type="tel"
-              required
-              placeholder="e.g. 9800011122"
-              value={guardPhone}
-              onChange={(e) => setGuardPhone(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          <div className="pt-2 flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => setIsAddGuardOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" isLoading={isLoading}>
-              Provision Guard Account
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Incident Timeline Modal */}
-      {selectedIncident && (
-        <Modal
-          isOpen={isTimelineModalOpen}
-          onClose={() => setIsTimelineModalOpen(false)}
-          title={`Incident Timeline: ${selectedIncident.incidentNumber}`}
-          subtitle={`Vehicle: ${formatPlateNumber(selectedIncident.plateNumber)} • Location: ${selectedIncident.location}`}
-        >
-          <IncidentTimelineView timeline={selectedIncident.timeline || []} />
-          <div className="pt-4 flex justify-end">
-            <Button variant="ghost" onClick={() => setIsTimelineModalOpen(false)}>
-              Close Timeline
-            </Button>
-          </div>
-        </Modal>
-      )}
     </div>
   );
 }

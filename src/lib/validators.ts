@@ -36,6 +36,8 @@ export const RegisterVehicleSchema = z.object({
   parkingSlot: z.string().optional(),
   parkingZone: z.string().optional(),
   stickerId: z.string().optional(),
+  ownerName: z.string().optional(),
+  phone: z.string().optional(),
 });
 
 export const CreateVehicleSchema = RegisterVehicleSchema;

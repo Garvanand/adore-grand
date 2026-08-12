@@ -7,10 +7,12 @@ export interface IVehicleDocument extends Document {
   rawPlateNumber: string; // Display plate string e.g. HR 26 AB 1234
   vehicleType: VehicleType;
   makeModel: string;
+  color?: string;
   ownerId: mongoose.Types.ObjectId;
   tower: string;
   flatNumber: string;
   parkingSlot?: string;
+  parkingZone?: string;
   stickerId?: string;
   photoUrl?: string;
   status: "active" | "unregistered" | "flagged";
@@ -18,12 +20,6 @@ export interface IVehicleDocument extends Document {
   updatedAt: Date;
 }
 
-/**
- * Helper utility to normalize vehicle registration numbers.
- * E.g. "HR26 AB 1234"  -> "HR26AB1234"
- * E.g. "hr26ab1234"    -> "HR26AB1234"
- * E.g. "HR-26-AB-1234" -> "HR26AB1234"
- */
 export function normalizePlateNumber(plate: string): string {
   if (!plate) return "";
   return plate.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
@@ -46,10 +42,6 @@ const VehicleSchema = new Schema<IVehicleDocument>(
     },
     vehicleType: {
       type: String,
-      enum: {
-        values: ["car", "bike", "ev", "commercial"],
-        message: "Invalid vehicle type",
-      },
       default: "car",
     },
     makeModel: {
@@ -57,23 +49,30 @@ const VehicleSchema = new Schema<IVehicleDocument>(
       required: [true, "Make and model is required"],
       trim: true,
     },
+    color: {
+      type: String,
+      default: "Not Specified",
+    },
     ownerId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "Vehicle owner reference is required"],
-      index: true,
+      required: [true, "Owner ID is required"],
     },
     tower: {
       type: String,
-      required: true,
-      index: true,
+      required: [true, "Tower is required"],
+      trim: true,
     },
     flatNumber: {
       type: String,
-      required: true,
-      index: true,
+      required: [true, "Flat number is required"],
+      trim: true,
     },
     parkingSlot: {
+      type: String,
+      trim: true,
+    },
+    parkingZone: {
       type: String,
       trim: true,
     },
@@ -83,13 +82,11 @@ const VehicleSchema = new Schema<IVehicleDocument>(
     },
     photoUrl: {
       type: String,
-      trim: true,
     },
     status: {
       type: String,
       enum: ["active", "unregistered", "flagged"],
       default: "active",
-      index: true,
     },
   },
   {
@@ -97,19 +94,9 @@ const VehicleSchema = new Schema<IVehicleDocument>(
   }
 );
 
-// Pre-validate hook to ensure normalized plate number
-VehicleSchema.pre("validate", function (next) {
-  if (this.plateNumber) {
-    this.plateNumber = normalizePlateNumber(this.plateNumber);
-  }
-  next();
-});
-
-// Indexes for fast lookup
+VehicleSchema.index({ plateNumber: 1 });
 VehicleSchema.index({ tower: 1, flatNumber: 1 });
-VehicleSchema.index({ ownerId: 1, status: 1 });
+VehicleSchema.index({ ownerId: 1 });
 
 export const Vehicle: Model<IVehicleDocument> =
   mongoose.models.Vehicle || mongoose.model<IVehicleDocument>("Vehicle", VehicleSchema);
-
-export default Vehicle;

@@ -5,6 +5,7 @@ import { VehicleSearch } from "@/components/vehicle/VehicleSearch";
 import { ImBlockedWorkflowModal } from "@/components/incident/ImBlockedWorkflowModal";
 import { AddVehicleModal } from "@/components/vehicle/AddVehicleModal";
 import { AdoreGrandScene } from "@/components/illustration/AdoreGrandScene";
+import { triggerPwaInstallPrompt } from "@/components/pwa/PwaInstallPrompt";
 import {
   Search,
   AlertOctagon,
@@ -18,7 +19,6 @@ import {
   Building2,
   ChevronRight,
   Lock,
-  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -35,14 +35,12 @@ export default function HomePage() {
 
   return (
     <div className="space-y-6 sm:space-y-10 py-1 sm:py-2 max-w-7xl mx-auto w-full">
-      {/* 1. MOBILE COMPACT HERO SCENE & BRANDING */}
+      {/* 1. HERO SCENE & BRANDING */}
       <section className="relative w-full rounded-3xl overflow-hidden border border-slate-200/90 bg-gradient-to-b from-sky-100/70 via-emerald-50/20 to-white p-4 sm:p-10 shadow-xs text-center space-y-4">
-        {/* Eyebrow */}
         <span className="text-[10px] sm:text-xs font-black text-emerald-800 tracking-widest uppercase bg-emerald-100/90 px-3.5 py-1 rounded-full border border-emerald-300 inline-block font-mono">
           ADORE GRAND • SECTOR 85 • FARIDABAD
         </span>
 
-        {/* Headings */}
         <div className="space-y-0.5">
           <h1 className="text-3xl sm:text-6xl font-black text-slate-900 font-heading tracking-tight">
             ADORE GRAND
@@ -55,15 +53,14 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Vector Scene Component */}
         <div className="relative w-full max-w-5xl mx-auto pt-1">
           <AdoreGrandScene />
         </div>
       </section>
 
-      {/* 2. PRIMARY ACTIONS (Stacked 80-110px Tall Cards for 1-Handed Mobile Operation) */}
+      {/* 2. PRIMARY ACTION CARDS */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-        {/* CARD 1: FIND A VEHICLE (Green Surface) */}
+        {/* FIND A VEHICLE */}
         <div
           onClick={scrollToSearch}
           className="p-4 sm:p-7 rounded-3xl bg-emerald-50/90 border-2 border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50 cursor-pointer space-y-2 sm:space-y-5 flex items-center justify-between group shadow-sm transition-all min-h-[90px] sm:min-h-[110px]"
@@ -84,7 +81,7 @@ export default function HomePage() {
           <ArrowRight className="w-5 h-5 text-emerald-700 group-hover:translate-x-1 transition-transform shrink-0" />
         </div>
 
-        {/* CARD 2: I'M BLOCKED (Coral/Red Surface) */}
+        {/* I'M BLOCKED */}
         <div
           onClick={() => setIsBlockedModalOpen(true)}
           className="p-4 sm:p-7 rounded-3xl bg-rose-50/90 border-2 border-rose-200 hover:border-rose-500 hover:bg-rose-50 cursor-pointer space-y-2 sm:space-y-5 flex items-center justify-between group shadow-sm transition-all min-h-[90px] sm:min-h-[110px]"
@@ -105,7 +102,7 @@ export default function HomePage() {
           <ArrowRight className="w-5 h-5 text-rose-700 group-hover:translate-x-1 transition-transform shrink-0" />
         </div>
 
-        {/* CARD 3: REGISTER MY VEHICLE (Yellow/Gold Surface) */}
+        {/* REGISTER MY VEHICLE */}
         <div
           onClick={() => setIsAddVehicleOpen(true)}
           className="p-4 sm:p-7 rounded-3xl bg-amber-50/90 border-2 border-amber-200 hover:border-amber-500 hover:bg-amber-50 cursor-pointer space-y-2 sm:space-y-5 flex items-center justify-between group shadow-sm transition-all min-h-[90px] sm:min-h-[110px]"
@@ -127,7 +124,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. QUICK ACCESS 2X2 GRID */}
+      {/* 3. QUICK ACCESS GRID */}
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <Link href="/dashboard" className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200 hover:border-emerald-300 shadow-xs flex items-center justify-between text-xs font-bold text-slate-800 transition">
           <div className="flex items-center gap-2.5">
@@ -155,34 +152,34 @@ export default function HomePage() {
           <ChevronRight className="w-4 h-4 text-slate-400 hidden sm:block" />
         </Link>
 
-        <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between text-xs font-bold text-slate-800">
+        <Link href="/announcements" className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200 hover:border-amber-300 shadow-xs flex items-center justify-between text-xs font-bold text-slate-800 transition">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
               <Bell className="w-4 h-4" />
             </div>
             <div>
               <span className="block text-slate-900 font-extrabold text-xs sm:text-sm">Announcements</span>
-              <span className="text-[10px] text-slate-500 font-normal">Society updates</span>
+              <span className="text-[10px] text-slate-500 font-normal">Society notices</span>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-400 hidden sm:block" />
-        </div>
+        </Link>
 
-        <a href="tel:01292858585" className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200 hover:border-rose-300 shadow-xs flex items-center justify-between text-xs font-bold text-slate-800">
+        <Link href="/emergency" className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200 hover:border-rose-300 shadow-xs flex items-center justify-between text-xs font-bold text-slate-800 transition">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
               <PhoneCall className="w-4 h-4" />
             </div>
             <div>
               <span className="block text-slate-900 font-extrabold text-xs sm:text-sm">Security</span>
-              <span className="text-[10px] text-slate-500 font-normal">Emergency</span>
+              <span className="text-[10px] text-slate-500 font-normal">Emergency contacts</span>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-400 hidden sm:block" />
-        </a>
+        </Link>
       </section>
 
-      {/* 4. VEHICLE LOOKUP */}
+      {/* 4. SOCIETY VEHICLE LOOKUP */}
       <section id="vehicle-search-section" className="p-5 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-md space-y-4">
         <div className="text-left space-y-1">
           <h2 className="text-lg sm:text-2xl font-black text-slate-900 font-heading uppercase tracking-tight text-emerald-800">
@@ -194,7 +191,7 @@ export default function HomePage() {
         <VehicleSearch />
       </section>
 
-      {/* 5. TRUST STRIP */}
+      {/* 5. TRUST STRIP WITH FUNCTIONAL PWA INSTALL BUTTON */}
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-2">
         <div className="p-3.5 rounded-2xl bg-white border border-slate-200 text-xs space-y-1 flex items-start gap-2.5 shadow-xs">
           <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
@@ -226,15 +223,19 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-white border border-slate-200 text-xs space-y-1 flex items-start gap-2.5 shadow-xs">
+        {/* FUNCTIONAL ADD TO HOME SCREEN BUTTON */}
+        <button
+          onClick={triggerPwaInstallPrompt}
+          className="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-emerald-400 text-xs space-y-1 flex items-start gap-2.5 shadow-xs text-left cursor-pointer transition"
+        >
           <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
             <Smartphone className="w-4 h-4" />
           </div>
           <div>
-            <strong className="text-slate-900 font-extrabold block text-xs">Home Screen</strong>
-            <p className="text-[10px] text-slate-500">Install app</p>
+            <strong className="text-slate-900 font-extrabold block text-xs">Add to Home Screen</strong>
+            <p className="text-[10px] text-emerald-700 font-bold">Install app 1-tap</p>
           </div>
-        </div>
+        </button>
       </section>
 
       {/* Modals */}
