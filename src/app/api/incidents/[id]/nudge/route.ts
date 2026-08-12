@@ -46,6 +46,13 @@ export async function POST(
         message: `${session.name} (Flat ${session.tower}-${session.flatNumber}) requests you to move vehicle ${incident.plateNumber} at ${incident.location}.`,
         incidentId: incident._id,
       });
+
+      const { dispatchPushNotificationToUser } = await import("@/lib/push");
+      await dispatchPushNotificationToUser(recipientId.toString(), {
+        title: `🚘 PARKING ALERT: ${incident.plateNumber}`,
+        body: `${session.name} requests you to move vehicle ${incident.plateNumber} at ${incident.location}.`,
+        url: "/dashboard",
+      });
     }
 
     await recordAuditLog({

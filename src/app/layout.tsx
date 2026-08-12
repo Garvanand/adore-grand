@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { PwaInstallPrompt } from "@/components/pwa/PwaInstallPrompt";
+import { PushSubscriber } from "@/components/pwa/PushSubscriber";
 import { GlobalActionProvider } from "@/context/GlobalActionContext";
 
 export const metadata: Metadata = {
@@ -47,6 +48,7 @@ export default function RootLayout({
             <Footer />
             <MobileBottomNav />
             <PwaInstallPrompt />
+            <PushSubscriber />
           </GlobalActionProvider>
         </Suspense>
       </body>

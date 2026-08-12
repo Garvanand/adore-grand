@@ -196,6 +196,7 @@ export async function POST(req: NextRequest) {
     // Create notification for the vehicle owner so they see it on their dashboard
     if (vehicle && vehicle.ownerId && (vehicle.ownerId as any)._id) {
       try {
+        const ownerIdStr = (vehicle.ownerId as any)._id.toString();
         await Notification.create({
           recipientId: (vehicle.ownerId as any)._id,
           senderId: reporterUserId,
@@ -205,6 +206,14 @@ export async function POST(req: NextRequest) {
           incidentId: newIncident._id,
           vehicleId: vehicle._id,
           isRead: false,
+        });
+
+        // Send instant browser Web Push notification
+        const { dispatchPushNotificationToUser } = await import("@/lib/push");
+        await dispatchPushNotificationToUser(ownerIdStr, {
+          title: "🚗 Your Vehicle is Blocking Someone",
+          body: `Your vehicle ${normPlate} at ${parsed.location} is blocking another resident. Please check or move it.`,
+          url: "/dashboard",
         });
       } catch (notifErr) {
         // Non-critical: log but don't fail the incident creation

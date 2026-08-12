@@ -45,6 +45,7 @@ export async function POST(
 
     // Notify reporting resident without revealing sensitive phone
     if (incident.reportedBy) {
+      const reporterIdStr = incident.reportedBy.toString();
       await Notification.create({
         recipientId: incident.reportedBy,
         senderId: session.userId,
@@ -52,6 +53,13 @@ export async function POST(
         title: `✅ Owner Responded: ${incident.plateNumber}`,
         message: `${noteText} (Location: ${incident.location})`,
         incidentId: incident._id,
+      });
+
+      const { dispatchPushNotificationToUser } = await import("@/lib/push");
+      await dispatchPushNotificationToUser(reporterIdStr, {
+        title: `✅ Owner Responded: ${incident.plateNumber}`,
+        body: `${noteText} (Location: ${incident.location})`,
+        url: "/dashboard",
       });
     }
 

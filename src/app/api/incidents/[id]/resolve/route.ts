@@ -43,6 +43,7 @@ export async function POST(
 
     // Send notifications to reporter and owner
     if (incident.reportedBy) {
+      const reporterIdStr = incident.reportedBy.toString();
       await Notification.create({
         recipientId: incident.reportedBy,
         senderId: session.userId,
@@ -50,6 +51,13 @@ export async function POST(
         title: `✅ Incident Resolved: ${incident.incidentNumber}`,
         message: `Issue with vehicle ${incident.plateNumber} at ${incident.location} has been marked resolved.`,
         incidentId: incident._id,
+      });
+
+      const { dispatchPushNotificationToUser } = await import("@/lib/push");
+      await dispatchPushNotificationToUser(reporterIdStr, {
+        title: `✅ Incident Resolved: ${incident.incidentNumber}`,
+        body: `Issue with vehicle ${incident.plateNumber} at ${incident.location} has been marked resolved.`,
+        url: "/dashboard",
       });
     }
 
