@@ -13,6 +13,8 @@ import {
   Loader2,
   RefreshCw,
   Lock,
+  MapPin,
+  X,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -29,6 +31,57 @@ export function VehicleSearch() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+
+  // Inline Request Movement Section State (replaces popup modal overlay)
+  const [activeRequestVehicleId, setActiveRequestVehicleId] = useState<string | null>(null);
+  const [locationInput, setLocationInput] = useState("Basement B1");
+  const [descriptionInput, setDescriptionInput] = useState("");
+  const [priorityInput, setPriorityInput] = useState<"normal" | "urgent">("normal");
+  const [isSubmittingInline, setIsSubmittingInline] = useState(false);
+  const [inlineError, setInlineError] = useState<string | null>(null);
+  const [requestSuccessId, setRequestSuccessId] = useState<string | null>(null);
+
+  const handleInlineSubmit = async (e: React.FormEvent, item: any) => {
+    e.preventDefault();
+    if (!locationInput.trim()) {
+      setInlineError("Please specify blockage location.");
+      return;
+    }
+
+    setIsSubmittingInline(true);
+    setInlineError(null);
+
+    try {
+      const res = await fetch("/api/incidents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plateNumber: item.plateNumber,
+          vehicleId: item.id,
+          location: locationInput.trim(),
+          description: descriptionInput.trim() || undefined,
+          priority: priorityInput,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setRequestSuccessId(item.id);
+        setTimeout(() => {
+          setRequestSuccessId(null);
+          setActiveRequestVehicleId(null);
+          setLocationInput("Basement B1");
+          setDescriptionInput("");
+        }, 2200);
+      } else {
+        setInlineError(data.message || "Failed to send move request.");
+      }
+    } catch (err: any) {
+      setInlineError("Network connection issue. Please try again.");
+    } finally {
+      setIsSubmittingInline(false);
+    }
+  };
 
   const handleSearch = async (e?: React.FormEvent, overrideQuery?: string) => {
     if (e) e.preventDefault();
@@ -297,26 +350,149 @@ export function VehicleSearch() {
                           </a>
                         </div>
 
-                        {/* 3. REQUEST MOVEMENT */}
+                        {/* 3. REQUEST MOVEMENT BUTTON (Toggles Inline Section) */}
                         <Button
                           variant="outline"
                           size="lg"
-                          className="w-full h-12 font-extrabold text-xs rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 border-amber-500 shadow-sm flex items-center justify-center gap-2"
+                          className="w-full h-12 font-extrabold text-xs rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 border-amber-500 shadow-sm flex items-center justify-center gap-2 cursor-pointer"
                           onClick={() => {
-                            setSelectedVehicle({
-                              id: item.id,
-                              plateNumber: item.plateNumber,
-                              rawPlateNumber: formatPlateNumber(item.plateNumber),
-                              tower: item.tower,
-                              flatNumber: item.flatNumber,
-                              ownerName: item.owner.name,
-                            });
-                            setIsMoveModalOpen(true);
+                            if (activeRequestVehicleId === item.id) {
+                              setActiveRequestVehicleId(null);
+                            } else {
+                              setActiveRequestVehicleId(item.id);
+                              setInlineError(null);
+                            }
                           }}
                         >
                           <Send className="w-4 h-4" />
-                          REQUEST MOVEMENT
+                          {activeRequestVehicleId === item.id ? "CLOSE REQUEST FORM" : "REQUEST MOVEMENT"}
                         </Button>
+
+                        {/* INLINE REQUEST MOVEMENT FORM SECTION (Normal page view flow, no popup overlays) */}
+                        {activeRequestVehicleId === item.id && (
+                          <div className="mt-4 p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 text-slate-900 space-y-3 shadow-md animate-in slide-in-from-top-2">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-xs font-black text-amber-900 font-heading flex items-center gap-1.5 uppercase tracking-wide">
+                                <Send className="w-4 h-4 text-amber-600" />
+                                Request Movement Alert for {formatPlateNumber(item.plateNumber)}
+                              </h4>
+                              <button
+                                type="button"
+                                onClick={() => setActiveRequestVehicleId(null)}
+                                className="p-1 rounded-lg text-amber-800 hover:bg-amber-100 transition text-xs font-extrabold"
+                                title="Close"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            {requestSuccessId === item.id ? (
+                              <div className="p-4 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold text-center space-y-1">
+                                <div className="flex items-center justify-center gap-1.5 text-emerald-700 font-black text-sm">
+                                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                                  <span>Move Alert Sent Successfully!</span>
+                                </div>
+                                <p className="text-[11px] text-emerald-800 font-medium">
+                                  In-app notification has been delivered to {item.owner.name}.
+                                </p>
+                              </div>
+                            ) : (
+                              <form onSubmit={(e) => handleInlineSubmit(e, item)} className="space-y-3">
+                                {inlineError && (
+                                  <div className="p-2.5 rounded-xl bg-rose-100 border border-rose-300 text-rose-800 text-xs font-bold flex items-center gap-1.5">
+                                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                                    <span>{inlineError}</span>
+                                  </div>
+                                )}
+
+                                <div>
+                                  <label className="block text-[11px] font-extrabold text-slate-800 mb-1 flex items-center gap-1">
+                                    <MapPin className="w-3.5 h-3.5 text-amber-600" />
+                                    Where is the vehicle blocking? *
+                                  </label>
+                                  {/* Quick Location Preset Pills */}
+                                  <div className="flex flex-wrap gap-1.5 mb-2">
+                                    {["Basement B1", "Basement B2", "Surface Parking", "Gate 1"].map((preset) => (
+                                      <button
+                                        key={preset}
+                                        type="button"
+                                        onClick={() => setLocationInput(preset)}
+                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition ${
+                                          locationInput === preset
+                                            ? "bg-amber-600 text-white border-amber-600"
+                                            : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                                        }`}
+                                      >
+                                        {preset}
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  <input
+                                    type="text"
+                                    required
+                                    placeholder="e.g. Basement B1 near Pillar 14 / Slot A-702"
+                                    value={locationInput}
+                                    onChange={(e) => setLocationInput(e.target.value)}
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-amber-500 font-medium shadow-xs"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                                    Urgency Priority
+                                  </label>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setPriorityInput("normal")}
+                                      className={`py-2 px-3 rounded-xl border text-xs font-extrabold transition ${
+                                        priorityInput === "normal"
+                                          ? "bg-emerald-600 text-white border-emerald-600"
+                                          : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                                      }`}
+                                    >
+                                      Normal Nudge
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setPriorityInput("urgent")}
+                                      className={`py-2 px-3 rounded-xl border text-xs font-extrabold transition ${
+                                        priorityInput === "urgent"
+                                          ? "bg-rose-600 text-white border-rose-600"
+                                          : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                                      }`}
+                                    >
+                                      Urgent Blockage
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center justify-end gap-2 pt-1">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setActiveRequestVehicleId(null)}
+                                    className="text-xs font-bold text-slate-600"
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    type="submit"
+                                    variant="primary"
+                                    size="sm"
+                                    isLoading={isSubmittingInline}
+                                    className="text-xs font-black rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 h-9 shadow-sm"
+                                  >
+                                    <Send className="w-3.5 h-3.5" />
+                                    Send Alert
+                                  </Button>
+                                </div>
+                              </form>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -326,16 +502,6 @@ export function VehicleSearch() {
           )}
         </div>
       )}
-
-      {/* Move Request Modal */}
-      <MoveRequestModal
-        isOpen={isMoveModalOpen}
-        onClose={() => setIsMoveModalOpen(false)}
-        vehicle={selectedVehicle}
-        onSuccess={() => {
-          setIsMoveModalOpen(false);
-        }}
-      />
     </div>
   );
 }

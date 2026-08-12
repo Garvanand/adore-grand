@@ -1,17 +1,26 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Smartphone, X, Plus, Share, CheckCircle2, ArrowRight } from "lucide-react";
+import { Smartphone, X, Plus, Share, CheckCircle2, ArrowRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 
 let globalDeferredPrompt: any = null;
 let setGlobalShowModal: ((show: boolean) => void) | null = null;
 
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeinstallprompt", (e: Event) => {
+    e.preventDefault();
+    (window as any).deferredPrompt = e;
+    globalDeferredPrompt = e;
+  });
+}
+
 export function openPwaInstallGuide() {
-  if (globalDeferredPrompt) {
-    globalDeferredPrompt.prompt();
-    globalDeferredPrompt.userChoice.then((choice: any) => {
+  const activePrompt = globalDeferredPrompt || (typeof window !== "undefined" && (window as any).deferredPrompt);
+  if (activePrompt) {
+    activePrompt.prompt();
+    activePrompt.userChoice.then((choice: any) => {
       console.log("User PWA choice:", choice.outcome);
     });
   } else if (setGlobalShowModal) {
@@ -49,6 +58,7 @@ export function PwaInstallPrompt() {
       e.preventDefault();
       setDeferredPrompt(e);
       globalDeferredPrompt = e;
+      (window as any).deferredPrompt = e;
 
       // Check local dismissal state (cooldown 7 days)
       const dismissedAt = localStorage.getItem("adorepark_install_dismissed");
@@ -57,23 +67,23 @@ export function PwaInstallPrompt() {
         if (daysSince < 7) return;
       }
 
-      // Show after 5 seconds delay
+      // Show after 4 seconds delay
       const timer = setTimeout(() => {
         setShowBanner(true);
-      }, 5000);
+      }, 4000);
 
       return () => clearTimeout(timer);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
-    // Show iOS prompt card after delay if on iOS and not dismissed
-    if (iosDevice && !checkStandalone) {
+    // Show prompt card after delay if not dismissed
+    if (!checkStandalone) {
       const dismissedAt = localStorage.getItem("adorepark_install_dismissed");
       if (!dismissedAt || (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 3600 * 24) >= 7) {
         const timer = setTimeout(() => {
           setShowBanner(true);
-        }, 5000);
+        }, 4000);
         return () => clearTimeout(timer);
       }
     }
@@ -94,11 +104,13 @@ export function PwaInstallPrompt() {
   }, []);
 
   const handleInstallClick = () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choice: any) => {
+    const activePrompt = deferredPrompt || globalDeferredPrompt || (typeof window !== "undefined" && (window as any).deferredPrompt);
+    if (activePrompt) {
+      activePrompt.prompt();
+      activePrompt.userChoice.then((choice: any) => {
         if (choice.outcome === "accepted") {
           setShowBanner(false);
+          setShowIosModal(false);
         }
       });
     } else {
@@ -113,6 +125,8 @@ export function PwaInstallPrompt() {
   };
 
   if (isStandalone) return null;
+
+  const activePrompt = deferredPrompt || globalDeferredPrompt || (typeof window !== "undefined" && (window as any).deferredPrompt);
 
   return (
     <>
@@ -130,7 +144,7 @@ export function PwaInstallPrompt() {
                     📱 Keep AdorePark one tap away
                   </h4>
                   <p className="text-slate-300 text-[11px] font-medium mt-0.5">
-                    Open parking assistance faster from your Home Screen.
+                    Install 1-tap app shortcut on your mobile Home Screen.
                   </p>
                 </div>
               </div>
@@ -165,7 +179,7 @@ export function PwaInstallPrompt() {
         </div>
       )}
 
-      {/* ELEGANT MODAL FOR MANUAL / SAFARI / IOS GUIDANCE */}
+      {/* ELEGANT MODAL WITH DIRECT 1-TAP INSTALL ACTION */}
       <Modal
         isOpen={showIosModal}
         onClose={() => setShowIosModal(false)}
@@ -174,37 +188,59 @@ export function PwaInstallPrompt() {
         className="max-w-md"
       >
         <div className="space-y-4 text-slate-900 py-1">
-          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-3">
-            <h4 className="text-sm font-black font-heading flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-emerald-600" />
-              To install AdorePark on your phone:
-            </h4>
-
-            <div className="space-y-2 text-xs font-bold text-slate-700">
-              <div className="flex items-center gap-2.5 p-2.5 bg-white rounded-xl border border-emerald-100">
-                <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-mono font-black text-xs flex items-center justify-center shrink-0">
-                  1
-                </span>
-                <span className="flex items-center gap-1">
-                  Tap <strong>Share</strong> <Share className="w-4 h-4 text-emerald-600" /> in browser bar
-                </span>
+          {/* DIRECT 1-TAP INSTALL TRIGGER IF BROWSER CAPTURED PROMPT */}
+          {activePrompt ? (
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-3 text-center">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center">
+                <Download className="w-6 h-6 animate-bounce" />
               </div>
-
-              <div className="flex items-center gap-2.5 p-2.5 bg-white rounded-xl border border-emerald-100">
-                <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-mono font-black text-xs flex items-center justify-center shrink-0">
-                  2
-                </span>
-                <span>Choose <strong>Add to Home Screen</strong></span>
-              </div>
+              <h4 className="text-sm font-black font-heading">
+                Ready to Add Icon to Home Screen!
+              </h4>
+              <p className="text-xs text-slate-600 font-medium">
+                Tap the button below to immediately add AdorePark app icon to your phone.
+              </p>
+              <Button
+                onClick={handleInstallClick}
+                className="w-full h-13 font-black text-sm rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md flex items-center justify-center gap-2"
+              >
+                <Download className="w-5 h-5" />
+                ADD TO HOME SCREEN NOW
+              </Button>
             </div>
-          </div>
+          ) : (
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-3">
+              <h4 className="text-sm font-black font-heading flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-emerald-600" />
+                To add AdorePark icon to your phone:
+              </h4>
 
-          <Button
-            onClick={() => setShowIosModal(false)}
-            className="w-full h-12 font-black text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
-            Got It
-          </Button>
+              <div className="space-y-2 text-xs font-bold text-slate-700">
+                <div className="flex items-center gap-2.5 p-2.5 bg-white rounded-xl border border-emerald-100">
+                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-mono font-black text-xs flex items-center justify-center shrink-0">
+                    1
+                  </span>
+                  <span className="flex items-center gap-1">
+                    Tap <strong>Share</strong> <Share className="w-4 h-4 text-emerald-600" /> or <strong>Menu (⋮)</strong> in browser bar
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2.5 p-2.5 bg-white rounded-xl border border-emerald-100">
+                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-mono font-black text-xs flex items-center justify-center shrink-0">
+                    2
+                  </span>
+                  <span>Choose <strong>Add to Home Screen</strong></span>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => setShowIosModal(false)}
+                className="w-full h-12 font-black text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white mt-2"
+              >
+                Got It
+              </Button>
+            </div>
+          )}
         </div>
       </Modal>
     </>
