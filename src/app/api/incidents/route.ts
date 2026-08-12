@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Incident } from "@/models/Incident";
 import { Vehicle } from "@/models/Vehicle";
+import { User } from "@/models/User";
 import { Notification } from "@/models/Notification";
-import { requireAuth } from "@/lib/auth/session";
+import { requireAuth, getSession } from "@/lib/auth/session";
 import { CreateMoveRequestSchema } from "@/lib/validators";
 import { normalizePlateNumber } from "@/lib/utils";
 import { recordAuditLog } from "@/lib/audit";
@@ -74,10 +75,43 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireAuth();
+    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const session = await getSession();
     
-    // Rate Limiting Check (Max 3 incident reports per user in 15 minutes)
-    const rateLimit = checkRateLimit("incident", session.userId, 3, 15 * 60 * 1000);
+    await connectToDatabase();
+
+    // Determine reporting user ObjectId reference (use session user if logged in, or fallback resident)
+    let reporterUserId: string;
+    let reporterName: string;
+    let reporterTower: string;
+    let reporterFlat: string;
+
+    if (session?.userId) {
+      reporterUserId = session.userId;
+      reporterName = session.name || "Adore Resident";
+      reporterTower = session.tower || "T1";
+      reporterFlat = session.flatNumber || "101";
+    } else {
+      let defaultUser = await User.findOne({ role: "resident", status: "active" });
+      if (!defaultUser) {
+        defaultUser = await User.create({
+          name: "Adore Resident",
+          phone: "+919876543210",
+          tower: "T1",
+          flatNumber: "101",
+          role: "resident",
+          status: "active",
+          isVerified: true,
+        });
+      }
+      reporterUserId = defaultUser._id.toString();
+      reporterName = defaultUser.name;
+      reporterTower = defaultUser.tower;
+      reporterFlat = defaultUser.flatNumber;
+    }
+
+    // Rate Limiting Check (Max 5 incident reports per IP/user in 15 minutes)
+    const rateLimit = checkRateLimit("incident", reporterUserId || ip, 5, 15 * 60 * 1000);
     if (!rateLimit.allowed) {
       const minutesRemaining = Math.ceil(rateLimit.resetMs / (60 * 1000));
       return NextResponse.json(
@@ -89,11 +123,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const parsed = CreateMoveRequestSchema.parse(body);
 
-    await connectToDatabase();
     const normPlate = normalizePlateNumber(parsed.plateNumber);
+
+    if (!normPlate || normPlate.length < 2) {
+      return NextResponse.json(
+        { success: false, message: "Valid vehicle registration plate number is required." },
+        { status: 400 }
+      );
+    }
 
     // Anti-spam duplicate check: prevent active duplicate open incidents for the same plate within 10 minutes
     const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
@@ -128,9 +168,9 @@ export async function POST(req: NextRequest) {
       incidentNumber,
       vehicleId: vehicle ? vehicle._id : undefined,
       plateNumber: normPlate,
-      reportedBy: session.userId,
+      reportedBy: reporterUserId,
       ownerId: vehicle ? vehicle.ownerId?._id : undefined,
-      location: parsed.location,
+      location: parsed.location || "Basement 1 / Main Gate",
       status: "OPEN",
       priority: parsed.priority || "normal",
       description: parsed.description || "Parking blockage reported.",
@@ -138,18 +178,19 @@ export async function POST(req: NextRequest) {
         {
           timestamp: new Date(),
           status: "OPEN",
-          updatedBy: session.userId,
-          note: `Incident reported by ${session.name} (Flat ${session.tower}-${session.flatNumber}) at ${parsed.location}`,
+          updatedBy: reporterUserId as any,
+          note: `Incident reported by ${reporterName} (Flat ${reporterTower}-${reporterFlat}) at ${parsed.location}`,
         },
       ],
     });
 
     await recordAuditLog({
-      actorId: session.userId,
+      actorId: reporterUserId,
       action: "INCIDENT_REPORTED",
       targetType: "incident",
       targetId: (newIncident._id as any).toString(),
       details: { plateNumber: normPlate, location: parsed.location },
+      ipAddress: ip,
     });
 
     // Create notification for the vehicle owner so they see it on their dashboard
@@ -157,7 +198,7 @@ export async function POST(req: NextRequest) {
       try {
         await Notification.create({
           recipientId: (vehicle.ownerId as any)._id,
-          senderId: session.userId,
+          senderId: reporterUserId,
           type: "move_request",
           title: "🚗 Your Vehicle is Blocking Someone",
           message: `Your vehicle ${normPlate} at ${parsed.location} is blocking another resident. Please move it as soon as possible.`,

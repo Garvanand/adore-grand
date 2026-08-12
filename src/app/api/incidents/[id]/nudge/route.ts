@@ -37,8 +37,9 @@ export async function POST(
     await incident.save();
 
     if (incident.ownerId) {
+      const recipientId = (incident.ownerId as any)._id || incident.ownerId;
       await Notification.create({
-        recipientId: incident.ownerId._id,
+        recipientId,
         senderId: session.userId,
         type: "move_request",
         title: `🚘 PARKING ALERT: ${incident.plateNumber}`,

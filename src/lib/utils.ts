@@ -77,3 +77,23 @@ export function timeAgo(dateInput: string | Date | undefined | null): string {
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
 }
+
+/**
+ * Generates a clean tel: URL for phone calls
+ */
+export function getTelUrl(phone: string | undefined | null): string {
+  if (!phone) return "tel:";
+  const clean = phone.replace(/[^0-9+]/g, "");
+  return `tel:${clean}`;
+}
+
+/**
+ * Generates a clean wa.me WhatsApp URL ensuring +91 prefix for 10-digit Indian numbers
+ */
+export function getWhatsAppUrl(phone: string | undefined | null, text: string = ""): string {
+  if (!phone) return "https://wa.me/";
+  const digits = phone.replace(/[^0-9]/g, "");
+  const fullPhone = digits.length === 10 ? `91${digits}` : digits;
+  const encodedText = text ? encodeURIComponent(text) : "";
+  return `https://wa.me/${fullPhone}${encodedText ? `?text=${encodedText}` : ""}`;
+}

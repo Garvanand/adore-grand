@@ -50,8 +50,8 @@ export const UpdateUserSchema = z.object({
 });
 
 export const CreateMoveRequestSchema = z.object({
-  plateNumber: z.string().min(4, "Vehicle plate number is required"),
-  location: z.string().min(2, "Location is required"),
+  plateNumber: z.string().min(2, "Vehicle plate number must be at least 2 characters"),
+  location: z.string().min(1, "Location is required").default("Basement 1 / Main Gate"),
   description: z.string().optional(),
   priority: z.enum(["normal", "urgent"]).optional().default("normal"),
 });

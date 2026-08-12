@@ -21,7 +21,7 @@ import {
   Clock,
   Check,
 } from "lucide-react";
-import { normalizePlateNumber, formatPlateNumber } from "@/lib/utils";
+import { normalizePlateNumber, formatPlateNumber, getTelUrl, getWhatsAppUrl } from "@/lib/utils";
 
 interface ImBlockedModalProps {
   isOpen: boolean;
@@ -357,14 +357,17 @@ export function ImBlockedWorkflowModal({ isOpen, onClose }: ImBlockedModalProps)
 
             <div className="space-y-2 pt-1">
               <div className="grid grid-cols-2 gap-2.5">
-                <a href={`tel:${foundVehicle?.owner?.phone || "01292858585"}`} className="w-full">
+                <a href={getTelUrl(foundVehicle?.owner?.phone || "01292858585")} className="w-full">
                   <Button variant="primary" size="lg" className="w-full h-12 font-black text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white">
                     <Phone className="w-4 h-4" /> CALL OWNER
                   </Button>
                 </a>
 
                 <a
-                  href={`https://wa.me/${(foundVehicle?.owner?.phone || "9876543210").replace(/[^0-9]/g, "")}?text=Hello,%20your%20vehicle%20${plateNumber}%20is%20blocking%20at%20Adore%20Grand.`}
+                  href={getWhatsAppUrl(
+                    foundVehicle?.owner?.phone || "9876543210",
+                    `Hello, your vehicle ${plateNumber} is blocking at Adore Grand.`
+                  )}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full"

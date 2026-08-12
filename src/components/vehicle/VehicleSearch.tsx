@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { MoveRequestModal } from "./MoveRequestModal";
 import { VehicleGraphic } from "@/components/illustration/vehicles/VehicleGraphic";
-import { formatPlateNumber, normalizePlateNumber } from "@/lib/utils";
+import { formatPlateNumber, normalizePlateNumber, getTelUrl, getWhatsAppUrl } from "@/lib/utils";
 
 export function VehicleSearch() {
   const [query, setQuery] = useState("");
@@ -265,7 +265,7 @@ export function VehicleSearch() {
                       <div className="space-y-2.5 pt-1">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                           {/* 1. CALL OWNER */}
-                          <a href={`tel:${item.owner.phone}`} className="w-full">
+                          <a href={getTelUrl(item.owner.phone)} className="w-full">
                             <Button
                               variant="primary"
                               size="lg"
@@ -278,9 +278,10 @@ export function VehicleSearch() {
 
                           {/* 2. WHATSAPP */}
                           <a
-                            href={`https://wa.me/${item.owner.phone.replace(/[^0-9]/g, "")}?text=Hello%20${encodeURIComponent(
-                              item.owner.name
-                            )},%20your%20vehicle%20${item.plateNumber}%20at%20Adore%20Grand%20needs%20to%20be%20moved.`}
+                            href={getWhatsAppUrl(
+                              item.owner.phone,
+                              `Hello ${item.owner.name}, your vehicle ${item.plateNumber} at Adore Grand needs to be moved.`
+                            )}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full"

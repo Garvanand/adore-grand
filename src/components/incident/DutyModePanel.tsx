@@ -22,7 +22,7 @@ import {
   AlertOctagon,
   Shield,
 } from "lucide-react";
-import { formatPlateNumber, timeAgo, normalizePlateNumber } from "@/lib/utils";
+import { formatPlateNumber, timeAgo, normalizePlateNumber, getTelUrl, getWhatsAppUrl } from "@/lib/utils";
 import { VehicleGraphic } from "@/components/illustration/vehicles/VehicleGraphic";
 
 export function DutyModePanel() {
@@ -324,7 +324,7 @@ export function DutyModePanel() {
                   <div className="grid grid-cols-2 gap-3 pt-1">
                     {/* 1. CALL OWNER (HUGE GREEN BUTTON) */}
                     <a
-                      href={`tel:${incident.owner?.phone || "+919876543210"}`}
+                      href={getTelUrl(incident.owner?.phone || "+919876543210")}
                       className="w-full"
                     >
                       <button className="w-full h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 active:scale-95 transition cursor-pointer">
@@ -335,9 +335,10 @@ export function DutyModePanel() {
 
                     {/* 2. WHATSAPP (HUGE TEAL BUTTON) */}
                     <a
-                      href={`https://wa.me/${(incident.owner?.phone || "919876543210").replace(/[^0-9]/g, "")}?text=Hello%20${encodeURIComponent(
-                        incident.owner?.name || "Resident"
-                      )},%20your%20vehicle%20${incident.plateNumber}%20at%20Adore%20Grand%20Gate%201%20needs%20to%20be%20moved.`}
+                      href={getWhatsAppUrl(
+                        incident.owner?.phone || "919876543210",
+                        `Hello ${incident.owner?.name || "Resident"}, your vehicle ${incident.plateNumber} at Adore Grand Gate 1 needs to be moved.`
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full"
@@ -427,7 +428,7 @@ export function DutyModePanel() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-1">
-                <a href={`tel:${searchResult.owner.phone}`} className="w-full">
+                <a href={getTelUrl(searchResult.owner.phone)} className="w-full">
                   <button className="w-full h-14 rounded-2xl bg-emerald-600 text-white font-black text-sm shadow-md flex items-center justify-center gap-2">
                     <Phone className="w-5 h-5" />
                     <span>{lang === "hi" ? "कॉल करें" : "CALL"}</span>
@@ -435,7 +436,10 @@ export function DutyModePanel() {
                 </a>
 
                 <a
-                  href={`https://wa.me/${searchResult.owner.phone.replace(/[^0-9]/g, "")}?text=Adore%20Grand%20Gate%201%20Notice`}
+                  href={getWhatsAppUrl(
+                    searchResult.owner.phone,
+                    `Hello ${searchResult.owner.name}, Adore Grand Gate 1 Security Notice regarding vehicle ${searchResult.plateNumber}.`
+                  )}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full"
