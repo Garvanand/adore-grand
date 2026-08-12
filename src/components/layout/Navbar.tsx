@@ -3,36 +3,43 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Car, LogOut, MapPin, Menu, X, PhoneCall, Megaphone } from "lucide-react";
+import { Car, LogOut, MapPin, Menu, X, PhoneCall, Megaphone, AlertOctagon, Search } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useGlobalActions } from "@/context/GlobalActionContext";
 
 export function Navbar() {
   const pathname = usePathname();
+  const { openFindVehicle, openImBlocked } = useGlobalActions();
+
   const [user, setUser] = useState<any>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    setIsAuthLoading(true);
     fetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => {
         if (data.authenticated) {
           setUser(data.user);
+        } else {
+          setUser(null);
         }
       })
-      .catch(() => {});
+      .catch(() => setUser(null))
+      .finally(() => setIsAuthLoading(false));
   }, [pathname]);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
+    setUser(null);
     window.location.href = "/";
   };
 
-  const scrollToSearch = () => {
-    const el = document.getElementById("vehicle-search-section");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+  // Hide main Navbar on Security Guard duty page (it has its own Gate 1 header)
+  if (pathname.startsWith("/security")) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs">
@@ -61,22 +68,24 @@ export function Navbar() {
             Home
           </Link>
           <button
-            onClick={scrollToSearch}
-            className="transition hover:text-emerald-600 cursor-pointer"
+            onClick={openFindVehicle}
+            className="transition hover:text-emerald-600 cursor-pointer flex items-center gap-1"
           >
+            <Search className="w-3.5 h-3.5 text-emerald-600" />
             Find Vehicle
           </button>
           <button
-            onClick={scrollToSearch}
-            className="transition hover:text-rose-600 cursor-pointer"
+            onClick={openImBlocked}
+            className="transition hover:text-rose-600 cursor-pointer flex items-center gap-1"
           >
+            <AlertOctagon className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
             I'm Blocked
           </button>
           <Link
             href="/dashboard"
             className={`transition hover:text-emerald-600 ${pathname === "/dashboard" ? "text-emerald-600 font-black border-b-2 border-emerald-600 pb-0.5" : ""}`}
           >
-            My Vehicles
+            My Vehicles & Requests
           </Link>
           <Link
             href="/announcements"
@@ -88,22 +97,29 @@ export function Navbar() {
             href="/emergency"
             className={`transition hover:text-rose-600 ${pathname === "/emergency" ? "text-rose-600 font-black border-b-2 border-rose-600 pb-0.5" : ""}`}
           >
-            Emergency Contacts
+            Emergency
           </Link>
         </nav>
 
-        {/* RIGHT: Location & User Login */}
+        {/* RIGHT: Location & User Login / Profile */}
         <div className="hidden sm:flex items-center gap-2.5 shrink-0">
           <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-700">
             <MapPin className="w-3.5 h-3.5 text-emerald-600" />
             <span>Sector 85, Faridabad</span>
           </div>
 
-          {user ? (
+          {isAuthLoading ? (
+            <div className="w-24 h-9 rounded-full bg-slate-100 animate-pulse" />
+          ) : user ? (
             <div className="flex items-center gap-2">
-              <Link href="/dashboard" className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800">
+              <Link href="/dashboard" className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-extrabold text-emerald-800 hover:bg-emerald-100 transition">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 <span>{user.name}</span>
+                {user.tower && user.flatNumber && (
+                  <span className="font-mono text-[10px] text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded-md">
+                    {user.tower}-{user.flatNumber}
+                  </span>
+                )}
               </Link>
               <button
                 onClick={handleLogout}
@@ -116,15 +132,21 @@ export function Navbar() {
           ) : (
             <Link href="/login">
               <Button variant="primary" size="sm" className="font-extrabold text-xs rounded-full px-4 h-9 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
-                Login / OTP
+                Resident Login
               </Button>
             </Link>
           )}
         </div>
 
-        {/* Mobile Toggle Button */}
+        {/* Mobile Navigation Area */}
         <div className="md:hidden flex items-center gap-2">
-          {!user && (
+          {!isAuthLoading && user && (
+            <Link href="/dashboard" className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-extrabold text-emerald-800">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="truncate max-w-[90px]">{user.name}</span>
+            </Link>
+          )}
+          {!isAuthLoading && !user && (
             <Link href="/login">
               <Button variant="primary" size="sm" className="font-extrabold text-[11px] py-1 px-3 rounded-full bg-emerald-600 text-white">
                 Login
@@ -142,13 +164,38 @@ export function Navbar() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden p-4 bg-white border-b border-slate-200 space-y-2.5 text-sm font-medium shadow-xl">
+        <div className="md:hidden p-4 bg-white border-b border-slate-200 space-y-2 text-sm font-medium shadow-xl">
           <Link
             href="/"
             onClick={() => setIsMobileMenuOpen(false)}
             className="block px-3.5 py-2.5 rounded-xl text-slate-800 font-bold hover:bg-slate-50"
           >
             Home
+          </Link>
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              openFindVehicle();
+            }}
+            className="w-full text-left px-3.5 py-2.5 rounded-xl text-emerald-800 font-bold hover:bg-emerald-50 flex items-center gap-2"
+          >
+            <Search className="w-4 h-4 text-emerald-600" /> Find Vehicle
+          </button>
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              openImBlocked();
+            }}
+            className="w-full text-left px-3.5 py-2.5 rounded-xl text-rose-800 font-bold hover:bg-rose-50 flex items-center gap-2"
+          >
+            <AlertOctagon className="w-4 h-4 text-rose-600" /> Report I'm Blocked
+          </button>
+          <Link
+            href="/dashboard"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block px-3.5 py-2.5 rounded-xl text-slate-800 font-bold hover:bg-slate-50"
+          >
+            My Vehicles & Requests
           </Link>
           <Link
             href="/announcements"
@@ -165,18 +212,11 @@ export function Navbar() {
             <PhoneCall className="w-4 h-4 text-rose-600" /> Emergency & Maintenance Contacts
           </Link>
           <Link
-            href="/dashboard"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="block px-3.5 py-2.5 rounded-xl text-slate-800 font-bold hover:bg-slate-50"
-          >
-            My Vehicles & Requests
-          </Link>
-          <Link
             href="/staff/login"
             onClick={() => setIsMobileMenuOpen(false)}
             className="block px-3.5 py-2.5 rounded-xl text-slate-800 font-bold hover:bg-slate-50"
           >
-            Security & Admin Login
+            Security & Admin Duty Login
           </Link>
         </div>
       )}

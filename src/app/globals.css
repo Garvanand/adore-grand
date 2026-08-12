@@ -155,7 +155,6 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   }
 }
 
-/* HERO DRIFT & BEACON KEYFRAMES */
 @keyframes cloudDrift {
   0% { transform: translate3d(0, 0, 0); }
   100% { transform: translate3d(1200px, 0, 0); }
@@ -166,9 +165,40 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   100% { transform: translate3d(1250px, 0, 0); }
 }
 
+@keyframes bikeDriveReverse {
+  0% { transform: translate3d(1250px, 0, 0); }
+  100% { transform: translate3d(-100px, 0, 0); }
+}
+
+@keyframes birdFly {
+  0% { transform: translate3d(-60px, 0, 0) scale(0.8); }
+  50% { transform: translate3d(600px, -15px, 0) scale(1); }
+  100% { transform: translate3d(1300px, 0, 0) scale(0.8); }
+}
+
 @keyframes beaconPulse {
   0%, 100% { opacity: 0.3; transform: scale(0.9); }
-  50% { opacity: 0.95; transform: scale(1.15); }
+  50% { opacity: 0.95; transform: scale(1.2); }
+}
+
+@keyframes textGradientShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes floatSubtle {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -4px, 0); }
+}
+
+.animate-text-shimmer {
+  background-size: 200% auto;
+  animation: textGradientShimmer 4s ease infinite;
+}
+
+.animate-float-subtle {
+  animation: floatSubtle 3s ease-in-out infinite;
 }
 
 /* ACCESSIBILITY: RESPECT PREFERS-REDUCED-MOTION */

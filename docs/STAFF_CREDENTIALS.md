@@ -52,4 +52,4 @@ Admin      | AG-Admin-7E55  | qW1$zR9#mP4@kL2!  | +91 9800088001
 6. Raw passwords are purged from server RAM immediately after export. Only salted password hashes remain in the database.
 
 ---
-*Maintained by Adore Grand Security & RWA Administration.*
+*Maintained by Garv *

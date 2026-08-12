@@ -152,6 +152,25 @@ export async function POST(req: NextRequest) {
       details: { plateNumber: normPlate, location: parsed.location },
     });
 
+    // Create notification for the vehicle owner so they see it on their dashboard
+    if (vehicle && vehicle.ownerId && (vehicle.ownerId as any)._id) {
+      try {
+        await Notification.create({
+          recipientId: (vehicle.ownerId as any)._id,
+          senderId: session.userId,
+          type: "move_request",
+          title: "🚗 Your Vehicle is Blocking Someone",
+          message: `Your vehicle ${normPlate} at ${parsed.location} is blocking another resident. Please move it as soon as possible.`,
+          incidentId: newIncident._id,
+          vehicleId: vehicle._id,
+          isRead: false,
+        });
+      } catch (notifErr) {
+        // Non-critical: log but don't fail the incident creation
+        console.error("Failed to create notification:", notifErr);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       message: "Parking incident created successfully.",

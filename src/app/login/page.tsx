@@ -49,7 +49,7 @@ export default function LoginPage() {
 
       const data = await res.json();
       if (data.success) {
-        router.push("/dashboard");
+        router.push("/");
       } else {
         setErrorMsg(data.message || "Failed to sign in. Please check details.");
       }

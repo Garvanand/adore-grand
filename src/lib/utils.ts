@@ -46,8 +46,10 @@ export function maskPhoneNumber(phone: string): string {
 /**
  * Format timestamp to friendly string
  */
-export function formatDateTime(dateInput: string | Date): string {
+export function formatDateTime(dateInput: string | Date | undefined | null): string {
+  if (!dateInput) return "—";
   const d = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+  if (isNaN(d.getTime())) return "—";
   return new Intl.DateTimeFormat("en-IN", {
     day: "numeric",
     month: "short",
@@ -60,8 +62,10 @@ export function formatDateTime(dateInput: string | Date): string {
 /**
  * Time ago helper
  */
-export function timeAgo(dateInput: string | Date): string {
+export function timeAgo(dateInput: string | Date | undefined | null): string {
+  if (!dateInput) return "just now";
   const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+  if (isNaN(date.getTime())) return "just now";
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 

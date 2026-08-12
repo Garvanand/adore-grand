@@ -49,6 +49,7 @@ export default function DashboardPage() {
   }, []);
 
   const handleAcknowledge = async (incidentId: string, action: "moving" | "checking") => {
+    if (!incidentId) return;
     setActionLoadingId(incidentId);
     try {
       const res = await fetch(`/api/incidents/${incidentId}/acknowledge`, {
@@ -58,6 +59,13 @@ export default function DashboardPage() {
       });
       const data = await res.json();
       if (data.success) {
+        setIncidents((prev) =>
+          prev.map((inc) =>
+            (inc.id === incidentId || inc._id === incidentId)
+              ? { ...inc, status: "CONTACTED" }
+              : inc
+          )
+        );
         fetchData();
       }
     } catch (e) {
@@ -68,6 +76,7 @@ export default function DashboardPage() {
   };
 
   const handleEscalateIncident = async (incidentId: string) => {
+    if (!incidentId) return;
     try {
       const res = await fetch(`/api/incidents/${incidentId}/escalate`, {
         method: "POST",
@@ -84,6 +93,8 @@ export default function DashboardPage() {
   };
 
   const handleResolveIncident = async (incidentId: string) => {
+    if (!incidentId) return;
+    setActionLoadingId(incidentId);
     try {
       const res = await fetch(`/api/incidents/${incidentId}/resolve`, {
         method: "POST",
@@ -92,10 +103,16 @@ export default function DashboardPage() {
       });
       const data = await res.json();
       if (data.success) {
+        // Remove resolved incident immediately from local state
+        setIncidents((prev) =>
+          prev.filter((inc) => inc.id !== incidentId && inc._id !== incidentId)
+        );
         fetchData();
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
@@ -196,62 +213,85 @@ export default function DashboardPage() {
 
         {/* RIGHT 5 COLS: ACTIVE ALERTS & INCIDENTS */}
         <div className="lg:col-span-5 space-y-4">
-          <h2 className="text-lg font-black text-slate-900 font-heading">
-            PARKING INCIDENTS & REQUESTS ({incidents.length})
-          </h2>
+          {(() => {
+            const activeIncidents = incidents.filter(
+              (inc) =>
+                inc.status &&
+                inc.status.toUpperCase() !== "RESOLVED" &&
+                inc.status.toUpperCase() !== "CANCELLED"
+            );
 
-          {incidents.length === 0 ? (
-            <Card className="border-slate-200 bg-emerald-50/40 py-8 text-center">
-              <CardContent className="flex flex-col items-center space-y-2">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <h4 className="text-sm font-bold text-slate-800">All Clear! No Active Blockages</h4>
-                <p className="text-xs text-slate-500 font-medium max-w-xs">
-                  None of your vehicles are currently reported as blocking others.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            incidents.map((inc) => (
-              <Card key={inc._id || inc.id} className="border-rose-200 bg-rose-50/50 shadow-sm">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono font-black text-base text-rose-900">
-                      {formatPlateNumber(inc.vehiclePlate)}
-                    </span>
-                    <Badge variant={inc.status === "open" ? "danger" : "warning"}>
-                      {inc.status}
-                    </Badge>
-                  </div>
+            return (
+              <>
+                <h2 className="text-lg font-black text-slate-900 font-heading">
+                  ACTIVE PARKING REQUESTS ({activeIncidents.length})
+                </h2>
 
-                  <p className="text-xs text-slate-700 font-bold">
-                    Reported at: {inc.location} ({timeAgo(inc.reportedAt)})
-                  </p>
+                {activeIncidents.length === 0 ? (
+                  <Card className="border-slate-200 bg-emerald-50/40 py-8 text-center">
+                    <CardContent className="flex flex-col items-center space-y-2">
+                      <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                        <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                      </div>
+                      <h4 className="text-sm font-bold text-slate-800">All Clear! No Active Blockages</h4>
+                      <p className="text-xs text-slate-500 font-medium max-w-xs">
+                        None of your vehicles are currently reported as blocking others.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  activeIncidents.map((inc) => {
+                    const incId = inc.id || inc._id;
+                    const isContacted = inc.status?.toUpperCase() === "CONTACTED";
+                    return (
+                      <Card key={incId} className="border-rose-200 bg-rose-50/50 shadow-sm">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono font-black text-base text-rose-900">
+                              {formatPlateNumber(inc.plateNumber)}
+                            </span>
+                            <Badge variant={isContacted ? "info" : "danger"}>
+                              {inc.status}
+                            </Badge>
+                          </div>
 
-                  <div className="flex items-center gap-2 pt-1">
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      className="font-extrabold text-xs rounded-xl bg-emerald-600 text-white"
-                      onClick={() => handleAcknowledge(inc.id, "moving")}
-                      isLoading={actionLoadingId === inc.id}
-                    >
-                      I'm Moving Car Now
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="font-bold text-xs rounded-xl border-rose-300 text-rose-700"
-                      onClick={() => handleResolveIncident(inc.id)}
-                    >
-                      Resolve
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+                          <p className="text-xs text-slate-700 font-bold">
+                            Reported at: {inc.location} ({timeAgo(inc.createdAt)})
+                          </p>
+
+                          <div className="flex items-center gap-2 pt-1">
+                            <Button
+                              size="sm"
+                              variant={isContacted ? "secondary" : "primary"}
+                              className={`font-extrabold text-xs rounded-xl ${
+                                isContacted
+                                  ? "bg-teal-100 text-teal-900 border-teal-300 opacity-90"
+                                  : "bg-emerald-600 text-white hover:bg-emerald-700"
+                              }`}
+                              onClick={() => handleAcknowledge(incId, "moving")}
+                              isLoading={actionLoadingId === incId}
+                              disabled={isContacted}
+                            >
+                              {isContacted ? "✅ Moving Vehicle Now" : "I'm Moving Car Now"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="font-bold text-xs rounded-xl border-rose-300 text-rose-700 hover:bg-rose-100"
+                              onClick={() => handleResolveIncident(incId)}
+                              isLoading={actionLoadingId === incId}
+                            >
+                              Mark Resolved
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
 

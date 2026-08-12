@@ -77,7 +77,7 @@ export default function AnnouncementsPage() {
                       </span>
                     )}
                     <Badge variant={item.category === "urgent" ? "danger" : "info"}>
-                      {item.category.toUpperCase()}
+                      {(item.category || "general").toUpperCase()}
                     </Badge>
                     <h3 className="text-lg font-black text-slate-900 font-heading">
                       {item.title}
