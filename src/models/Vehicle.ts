@@ -94,7 +94,6 @@ const VehicleSchema = new Schema<IVehicleDocument>(
   }
 );
 
-VehicleSchema.index({ plateNumber: 1 });
 VehicleSchema.index({ tower: 1, flatNumber: 1 });
 VehicleSchema.index({ ownerId: 1 });
 

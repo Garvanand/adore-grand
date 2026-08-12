@@ -38,7 +38,7 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
     };
 
     cached.promise = mongoose
-      .connect(MONGODB_URI, opts)
+      .connect(MONGODB_URI!, opts)
       .then((m) => {
         console.log("Successfully connected to MongoDB Atlas database.");
         return m;
