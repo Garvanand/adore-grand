@@ -24,8 +24,6 @@ export const viewport: Viewport = {
   themeColor: "#059669",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({
@@ -37,7 +35,7 @@ export default function RootLayout({
     <html lang="en" className="light">
       <body className="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white pb-16 sm:pb-0">
         <Navbar />
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <main className="flex-1 w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 py-4 sm:py-8">
           {children}
         </main>
         <Footer />

@@ -48,6 +48,9 @@ export async function GET(req: NextRequest) {
 
     await connectToDatabase();
 
+    // Ensure User model is registered before populate
+    if (!User) console.log("User model initialized");
+
     // 3. Perform query with safe regex matching
     let vehicles = await Vehicle.find({
       plateNumber: { $regex: normQuery, $options: "i" },
@@ -61,39 +64,44 @@ export async function GET(req: NextRequest) {
     const callerId = session?.userId;
 
     if (session?.userId) {
-      await recordAuditLog({
-        actorId: session.userId,
-        action: "VEHICLE_SEARCH",
-        targetType: "vehicle",
-        details: { query: normQuery, matchedCount: vehicles.length },
-        ipAddress: ip,
-      });
+      try {
+        await recordAuditLog({
+          actorId: session.userId,
+          action: "VEHICLE_SEARCH",
+          targetType: "vehicle",
+          details: { query: normQuery, matchedCount: vehicles.length },
+          ipAddress: ip,
+        });
+      } catch (logErr) {
+        console.warn("[AUDIT WARNING] Vehicle search audit failed silently:", logErr);
+      }
     }
 
     // 4. Privacy Masking Guarantee: Phone numbers are masked for regular residents
     const formattedVehicles = vehicles.map((v: any) => {
-      const owner = v.ownerId || {};
-      const isSelfOwner = callerId && owner._id && owner._id.toString() === callerId;
+      const owner = (v.ownerId && typeof v.ownerId === "object") ? v.ownerId : {};
+      const ownerIdStr = owner._id ? owner._id.toString() : (v.ownerId ? v.ownerId.toString() : null);
+      const isSelfOwner = Boolean(callerId && ownerIdStr && ownerIdStr === callerId);
       const canViewFullPhone =
         callerRole === "security" || callerRole === "admin" || callerRole === "super_admin" || isSelfOwner;
 
       return {
-        id: v._id.toString(),
-        plateNumber: v.plateNumber,
-        rawPlateNumber: v.rawPlateNumber || v.plateNumber,
-        vehicleType: v.vehicleType,
-        makeModel: v.makeModel,
-        tower: v.tower,
-        flatNumber: v.flatNumber,
+        id: v._id ? v._id.toString() : "",
+        plateNumber: v.plateNumber || "",
+        rawPlateNumber: v.rawPlateNumber || v.plateNumber || "",
+        vehicleType: v.vehicleType || "car",
+        makeModel: v.makeModel || "Vehicle",
+        tower: v.tower || owner.tower || "T1",
+        flatNumber: v.flatNumber || owner.flatNumber || "101",
         parkingSlot: v.parkingSlot || "Not Assigned",
         stickerId: v.stickerId || "N/A",
-        status: v.status,
+        status: v.status || "active",
         owner: {
-          id: owner._id ? owner._id.toString() : null,
+          id: ownerIdStr,
           name: owner.name || "Adore Resident",
-          tower: owner.tower || v.tower,
-          flatNumber: owner.flatNumber || v.flatNumber,
-          phone: canViewFullPhone ? owner.phone : maskPhoneNumber(owner.phone || ""),
+          tower: owner.tower || v.tower || "T1",
+          flatNumber: owner.flatNumber || v.flatNumber || "101",
+          phone: canViewFullPhone ? (owner.phone || "") : maskPhoneNumber(owner.phone || ""),
           phoneMasked: maskPhoneNumber(owner.phone || ""),
           isPhonePublic: canViewFullPhone,
         },
@@ -107,7 +115,7 @@ export async function GET(req: NextRequest) {
       results: formattedVehicles,
     });
   } catch (error: any) {
-    // 5. Safe Database Error Handling (Never leak MongoDB internals)
+    console.error("[VEHICLE SEARCH API ERROR]:", error);
     return NextResponse.json(
       { success: false, message: "Search service temporarily unavailable." },
       { status: 500 }

@@ -18,7 +18,7 @@ function ParkingZoneContent() {
   const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
 
   return (
-    <div className="space-y-8 py-4 max-w-5xl mx-auto">
+    <div className="space-y-8 py-4 max-w-5xl mx-auto page-enter">
       {/* Top Welcome Banner */}
       <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white space-y-3 shadow-md">
         <span className="px-3 py-1 rounded-full bg-white/20 text-white text-xs font-black uppercase font-mono tracking-wider inline-block">

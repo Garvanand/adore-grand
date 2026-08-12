@@ -17,6 +17,11 @@
   --accent-light: #fffbeb;
   --danger: #e11d48;
   --danger-light: #fff1f2;
+
+  /* ADOREPARK APPLICATION-WIDE MOTION SYSTEM TOKENS */
+  --motion-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-normal: 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-slow: 350ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body {
@@ -35,7 +40,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   font-family: var(--font-heading);
 }
 
-/* Light Mode Friendly Card Elevation */
+/* Light Mode Friendly Card Elevation & Motion Tokens */
 .light-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -43,22 +48,137 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   border-radius: 1.5rem;
 }
 
-.light-card-interactive {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+/* CARDS MOTION SYSTEM */
+.motion-card {
+  transition: transform var(--motion-fast), box-shadow var(--motion-fast), border-color var(--motion-fast);
+  will-change: transform;
 }
-.light-card-interactive:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 20px 30px -10px rgba(5, 150, 105, 0.12);
+.motion-card:hover {
+  transform: translate3d(0, -2px, 0);
+  box-shadow: 0 16px 25px -8px rgba(5, 150, 105, 0.12);
   border-color: rgba(16, 185, 129, 0.4);
 }
+.motion-card:active {
+  transform: scale(0.98);
+}
 
-/* Rounded Icon Container Utility */
-.icon-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 1rem;
-  transition: transform 0.2s ease;
+/* BUTTONS MOTION SYSTEM */
+.motion-button {
+  transition: transform var(--motion-fast), opacity var(--motion-fast), background-color var(--motion-fast);
+  will-change: transform;
+}
+.motion-button:active {
+  transform: scale(0.97);
+}
+
+/* SEARCH & INPUT FOCUS MOTION SYSTEM */
+.motion-input {
+  transition: border-color var(--motion-fast), box-shadow var(--motion-fast), background-color var(--motion-fast);
+}
+.motion-input:focus {
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+}
+
+/* SKELETON SHIMMER LOADING */
+.motion-skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* PAGE & COMPONENT ENTRANCE ANIMATIONS */
+.page-enter {
+  animation: pageEnter var(--motion-slow) forwards;
+}
+
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* VEHICLE FOUND CARD ENTER */
+.vehicle-card-enter {
+  animation: vehicleCardEnter var(--motion-normal) forwards;
+}
+
+@keyframes vehicleCardEnter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* GUIDED STEP SLIDE ENTER */
+.step-slide-enter {
+  animation: stepSlide var(--motion-fast) forwards;
+}
+
+@keyframes stepSlide {
+  0% {
+    opacity: 0;
+    transform: translate3d(8px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* PWA INSTALL SLIDE ENTER */
+.pwa-slide-enter {
+  animation: pwaSlide var(--motion-normal) forwards;
+}
+
+@keyframes pwaSlide {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* HERO DRIFT & BEACON KEYFRAMES */
+@keyframes cloudDrift {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(1200px, 0, 0); }
+}
+
+@keyframes carDrive {
+  0% { transform: translate3d(-100px, 0, 0); }
+  100% { transform: translate3d(1250px, 0, 0); }
+}
+
+@keyframes beaconPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.9); }
+  50% { opacity: 0.95; transform: scale(1.15); }
+}
+
+/* ACCESSIBILITY: RESPECT PREFERS-REDUCED-MOTION */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Custom Soft Scrollbars */

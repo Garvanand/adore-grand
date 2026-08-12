@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { PhoneLoginSchema } from "@/lib/validators";
 import { checkRateLimit } from "@/lib/rateLimit";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";

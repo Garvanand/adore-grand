@@ -4,7 +4,7 @@ import { ShieldAlert, PhoneCall } from "lucide-react";
 
 export default function SecurityDutyPage() {
   return (
-    <div className="space-y-6 py-2 max-w-6xl mx-auto">
+    <div className="space-y-6 py-2 max-w-6xl mx-auto page-enter">
       {/* Duty Header */}
       <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-rose-600 to-rose-700 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md">
         <div>

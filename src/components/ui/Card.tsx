@@ -1,13 +1,16 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  interactive?: boolean;
+}
 
-export function Card({ className, ...props }: CardProps) {
+export function Card({ className, interactive, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "rounded-3xl bg-white border border-slate-200/90 shadow-md text-slate-900 overflow-hidden",
+        "rounded-3xl bg-white border border-slate-200/90 shadow-xs text-slate-900 overflow-hidden",
+        interactive && "motion-card cursor-pointer",
         className
       )}
       {...props}

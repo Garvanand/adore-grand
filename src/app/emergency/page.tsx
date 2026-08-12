@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { PhoneCall, ShieldCheck, Wrench, Zap, ArrowLeft, Building2, MapPin, MessageCircle } from "lucide-react";
+import { PhoneCall, ShieldCheck, Wrench, Zap, ArrowLeft, Building2, MapPin, MessageCircle, Mail, Code } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -39,7 +39,7 @@ export default function EmergencyContactsPage() {
   ];
 
   return (
-    <div className="space-y-6 py-4 max-w-4xl mx-auto">
+    <div className="space-y-6 py-4 max-w-4xl mx-auto page-enter">
       {/* Top Banner */}
       <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-rose-600 via-rose-700 to-rose-800 text-white space-y-2 shadow-md">
         <div className="flex items-center gap-2">
@@ -65,7 +65,7 @@ export default function EmergencyContactsPage() {
         {contacts.map((item) => {
           const IconComp = item.icon;
           return (
-            <Card key={item.phone} className="border-slate-200 bg-white shadow-sm hover:border-emerald-300 transition-all">
+            <Card key={item.phone} className="border-slate-200 bg-white shadow-xs hover:border-emerald-300 motion-card">
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className={`w-12 h-12 rounded-2xl border ${item.color} flex items-center justify-center font-bold shrink-0`}>
@@ -105,6 +105,30 @@ export default function EmergencyContactsPage() {
             </Card>
           );
         })}
+      </div>
+
+      {/* TECHNICAL EMERGENCY SUPPORT CARD */}
+      <div className="p-6 rounded-3xl bg-slate-900 text-white space-y-3 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black uppercase font-mono tracking-wider">
+              24/7 Developer Support
+            </span>
+          </div>
+          <h3 className="text-lg font-black font-heading flex items-center gap-2 text-white">
+            <Code className="w-5 h-5 text-emerald-400" />
+            Technical Emergency Contact
+          </h3>
+          <p className="text-xs text-slate-300 font-medium">
+            For app bugs, server outage, database issue, or technical emergencies:
+          </p>
+        </div>
+
+        <a href="mailto:garvanand03@gmail.com" className="shrink-0 w-full sm:w-auto">
+          <Button variant="primary" size="md" className="w-full sm:w-auto font-black text-xs rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
+            <Mail className="w-4 h-4" /> Email garvanand03@gmail.com
+          </Button>
+        </a>
       </div>
 
       {/* Maintenance Office & Gate 1 Guidance Box */}

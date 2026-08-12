@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Lock, User, Building2, ArrowRight } from "lucide-react";
+import { ShieldCheck, Lock, User, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
@@ -48,7 +48,7 @@ export default function StaffLoginPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto py-12 px-4 space-y-6">
+    <div className="max-w-md mx-auto py-12 px-4 space-y-6 page-enter">
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-100 border border-rose-300 text-rose-800 text-xs font-black uppercase tracking-widest">
           <ShieldCheck className="w-4 h-4 text-rose-600" />
@@ -80,7 +80,7 @@ export default function StaffLoginPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. garvanand03 or guard_gate1"
+                  placeholder="Enter staff username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-10 pr-3 h-12 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-mono font-bold focus:outline-none focus:border-rose-600"
@@ -117,37 +117,6 @@ export default function StaffLoginPage() {
               Sign In to Duty Desk <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </form>
-
-          {/* Quick Demo Staff Credentials Box */}
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
-            <span className="font-extrabold text-slate-700 block font-sans">
-              Demo Credentials (Adore Grand):
-            </span>
-            <div className="flex justify-between text-[11px] text-slate-600">
-              <span>Super Admin:</span>
-              <button
-                onClick={() => {
-                  setUsername("garvanand03");
-                  setPassword("Garv@516002");
-                }}
-                className="text-rose-600 hover:underline font-bold"
-              >
-                garvanand03 / Garv@516002
-              </button>
-            </div>
-            <div className="flex justify-between text-[11px] text-slate-600">
-              <span>Security Guard:</span>
-              <button
-                onClick={() => {
-                  setUsername("guard_gate1");
-                  setPassword("Guard@123456");
-                }}
-                className="text-rose-600 hover:underline font-bold"
-              >
-                guard_gate1 / Guard@123456
-              </button>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>

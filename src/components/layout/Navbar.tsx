@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Car, ShieldCheck, User, LogOut, MapPin, Menu, X, Bell, PhoneCall, Megaphone } from "lucide-react";
+import { Car, LogOut, MapPin, Menu, X, PhoneCall, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export function Navbar() {
@@ -36,7 +36,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div className="w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 h-16 flex items-center justify-between gap-4">
         {/* LEFT: Logo & Society */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
           <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
@@ -52,8 +52,8 @@ export function Navbar() {
           </div>
         </Link>
 
-        {/* CENTER: Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-600">
+        {/* CENTER: Desktop & Laptop Navigation Links */}
+        <nav className="hidden md:flex items-center gap-4 lg:gap-6 text-xs font-extrabold text-slate-600">
           <Link
             href="/"
             className={`transition hover:text-emerald-600 ${pathname === "/" ? "text-emerald-600 font-black border-b-2 border-emerald-600 pb-0.5" : ""}`}
@@ -94,7 +94,7 @@ export function Navbar() {
 
         {/* RIGHT: Location & User Login */}
         <div className="hidden sm:flex items-center gap-2.5 shrink-0">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-700">
+          <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-700">
             <MapPin className="w-3.5 h-3.5 text-emerald-600" />
             <span>Sector 85, Faridabad</span>
           </div>
@@ -107,7 +107,7 @@ export function Navbar() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="p-2 text-slate-400 hover:text-rose-600 transition rounded-xl hover:bg-slate-100"
+                className="p-2 text-slate-400 hover:text-rose-600 transition rounded-xl hover:bg-slate-100 cursor-pointer"
                 title="Log Out"
               >
                 <LogOut className="w-4 h-4" />
@@ -123,7 +123,7 @@ export function Navbar() {
         </div>
 
         {/* Mobile Toggle Button */}
-        <div className="lg:hidden flex items-center gap-2">
+        <div className="md:hidden flex items-center gap-2">
           {!user && (
             <Link href="/login">
               <Button variant="primary" size="sm" className="font-extrabold text-xs py-1.5 px-3.5 rounded-full bg-emerald-600 text-white">
@@ -133,7 +133,7 @@ export function Navbar() {
           )}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
+            className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition cursor-pointer"
           >
             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -142,7 +142,7 @@ export function Navbar() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden p-4 bg-white border-b border-slate-200 space-y-3 text-sm font-medium shadow-xl">
+        <div className="md:hidden p-4 bg-white border-b border-slate-200 space-y-3 text-sm font-medium shadow-xl">
           <Link
             href="/"
             onClick={() => setIsMobileMenuOpen(false)}

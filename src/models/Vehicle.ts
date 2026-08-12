@@ -20,8 +20,8 @@ export interface IVehicleDocument extends Document {
   updatedAt: Date;
 }
 
-export function normalizePlateNumber(plate: string): string {
-  if (!plate) return "";
+export function normalizePlateNumber(plate: any): string {
+  if (!plate || typeof plate !== "string") return "";
   return plate.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
 }
 
@@ -33,7 +33,7 @@ const VehicleSchema = new Schema<IVehicleDocument>(
       unique: true,
       uppercase: true,
       trim: true,
-      set: (v: string) => normalizePlateNumber(v),
+      set: (v: any) => (typeof v === "string" ? normalizePlateNumber(v) : v),
     },
     rawPlateNumber: {
       type: String,

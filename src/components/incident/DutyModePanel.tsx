@@ -33,8 +33,14 @@ export function DutyModePanel() {
 
   useEffect(() => {
     fetchIncidents();
-    // Poll every 10 seconds for night duty alerts
-    const interval = setInterval(fetchIncidents, 10000);
+    // Lightweight 12s polling interval (only runs when tab is active/visible)
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return; // Skip polling when browser tab is hidden
+      }
+      fetchIncidents();
+    }, 12000);
+
     return () => clearInterval(interval);
   }, []);
 

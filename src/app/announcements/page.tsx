@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Bell, ShieldCheck, Megaphone, Calendar, User, Pin, ArrowLeft } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Bell, Megaphone, Calendar, User, Pin, ArrowLeft } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import Link from "next/link";
 import { formatDateTime } from "@/lib/utils";
@@ -25,7 +24,7 @@ export default function AnnouncementsPage() {
   }, []);
 
   return (
-    <div className="space-y-6 py-4 max-w-4xl mx-auto">
+    <div className="space-y-6 py-4 max-w-4xl mx-auto page-enter">
       {/* Top Banner */}
       <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white space-y-2 shadow-md">
         <div className="flex items-center gap-2">
@@ -49,8 +48,10 @@ export default function AnnouncementsPage() {
       {/* Announcements List */}
       <div className="space-y-4">
         {isLoading ? (
-          <div className="py-12 text-center text-slate-500 font-bold text-sm">
-            Loading society announcements...
+          <div className="space-y-3">
+            {[1, 2].map((i) => (
+              <div key={i} className="p-6 rounded-3xl bg-white border border-slate-200 motion-skeleton h-28" />
+            ))}
           </div>
         ) : announcements.length === 0 ? (
           <Card className="border-slate-200 bg-white p-8 text-center">
@@ -66,7 +67,7 @@ export default function AnnouncementsPage() {
           </Card>
         ) : (
           announcements.map((item) => (
-            <Card key={item.id} className="border-slate-200 bg-white shadow-sm hover:border-emerald-300 transition-all">
+            <Card key={item.id} className="border-slate-200 bg-white shadow-xs hover:border-emerald-300 motion-card">
               <CardContent className="p-6 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
@@ -98,7 +99,7 @@ export default function AnnouncementsPage() {
                     <User className="w-3.5 h-3.5 text-emerald-600" />
                     Posted by: <strong>{item.postedBy}</strong>
                   </span>
-                  <span className="text-emerald-700">Adore Grand Sector 85 Faridabad</span>
+                  <span className="text-emerald-700 font-mono">Adore Grand Sector 85 Faridabad</span>
                 </div>
               </CardContent>
             </Card>

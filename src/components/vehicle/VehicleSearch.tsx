@@ -192,7 +192,7 @@ export function VehicleSearch() {
             results.map((item) => (
               <Card
                 key={item.id}
-                className="border-emerald-200 bg-white shadow-lg rounded-3xl overflow-hidden hover:border-emerald-400 transition-all animate-in fade-in zoom-in-95 duration-200"
+                className="border-emerald-200 bg-white shadow-lg rounded-3xl overflow-hidden hover:border-emerald-400 vehicle-card-enter"
               >
                 {/* Found Success Banner */}
                 <div className="bg-emerald-50 px-6 py-2.5 border-b border-emerald-100 flex items-center justify-between text-xs text-emerald-800 font-bold">

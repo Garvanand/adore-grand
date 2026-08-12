@@ -18,7 +18,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const baseStyles =
-    "inline-flex items-center justify-center font-extrabold rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none select-none cursor-pointer";
+    "inline-flex items-center justify-center font-extrabold rounded-2xl motion-button disabled:opacity-50 disabled:pointer-events-none select-none cursor-pointer";
 
   const variants = {
     primary:

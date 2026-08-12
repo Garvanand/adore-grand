@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, User, Phone, Car, ArrowRight, ShieldCheck, CheckCircle2, Sparkles } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Building2, User, Phone, Car, ArrowRight, ShieldCheck, CheckCircle2, Sparkles, Lock } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 
@@ -61,22 +61,26 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto py-8 px-4 space-y-6">
+    <div className="max-w-md mx-auto py-10 px-4 space-y-6">
+      {/* Light Mode High-Contrast Header */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-black uppercase tracking-widest">
-          <Building2 className="w-4 h-4 text-emerald-400" />
-          Adore Grand Resident Sign-In
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-black uppercase tracking-widest font-mono">
+          <Building2 className="w-4 h-4 text-emerald-600" />
+          ADORE GRAND RESIDENT SIGN-IN
         </div>
-        <h1 className="text-3xl font-black text-white font-heading">AdorePark Resident Portal</h1>
-        <p className="text-xs text-slate-300 font-medium">
+        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 font-heading tracking-tight">
+          AdorePark Resident Portal
+        </h1>
+        <p className="text-xs text-slate-600 font-medium max-w-sm mx-auto">
           Sign in with your flat & vehicle details for 1-tap parking coordination. No SMS OTP required.
         </p>
       </div>
 
-      <Card className="border-slate-800 shadow-2xl bg-slate-900/90">
-        <CardContent className="p-6 space-y-5">
+      {/* Light Mode White Card Container */}
+      <Card className="border-slate-200 shadow-xl bg-white rounded-3xl">
+        <CardContent className="p-6 space-y-5 text-slate-900">
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-800 text-xs text-rose-200 font-medium">
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-bold">
               {errorMsg}
             </div>
           )}
@@ -84,7 +88,7 @@ export default function LoginPage() {
           <form onSubmit={handleQuickLogin} className="space-y-4">
             {/* 1. Name */}
             <div>
-              <label className="block text-xs font-bold text-slate-200 mb-1">
+              <label className="block text-xs font-black text-slate-900 mb-1">
                 Resident Full Name * (नाम)
               </label>
               <div className="relative">
@@ -97,7 +101,7 @@ export default function LoginPage() {
                   placeholder="e.g. Vikram Sharma"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-emerald-500"
+                  className="w-full pl-10 pr-3 h-12 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-bold focus:outline-none focus:border-emerald-600 focus:bg-white"
                 />
               </div>
             </div>
@@ -105,13 +109,13 @@ export default function LoginPage() {
             {/* 2. Tower & Flat Number Grid */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-200 mb-1">
+                <label className="block text-xs font-black text-slate-900 mb-1">
                   Tower * (टावर)
                 </label>
                 <select
                   value={tower}
                   onChange={(e) => setTower(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs font-bold focus:outline-none focus:border-emerald-500"
+                  className="w-full px-3 h-12 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-bold focus:outline-none focus:border-emerald-600 focus:bg-white"
                 >
                   {towers.map((t) => (
                     <option key={t} value={t}>
@@ -122,7 +126,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-200 mb-1">
+                <label className="block text-xs font-black text-slate-900 mb-1">
                   Flat No. * (फ्लैट)
                 </label>
                 <input
@@ -131,14 +135,14 @@ export default function LoginPage() {
                   placeholder="e.g. 1204"
                   value={flatNumber}
                   onChange={(e) => setFlatNumber(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs font-bold focus:outline-none focus:border-emerald-500"
+                  className="w-full px-3.5 h-12 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-mono font-bold focus:outline-none focus:border-emerald-600 focus:bg-white"
                 />
               </div>
             </div>
 
             {/* 3. Phone Number */}
             <div>
-              <label className="block text-xs font-bold text-slate-200 mb-1">
+              <label className="block text-xs font-black text-slate-900 mb-1">
                 Mobile Number * (फोन नंबर)
               </label>
               <div className="relative">
@@ -151,15 +155,15 @@ export default function LoginPage() {
                   placeholder="e.g. 9876543210"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-emerald-500"
+                  className="w-full pl-10 pr-3 h-12 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-mono font-bold focus:outline-none focus:border-emerald-600 focus:bg-white"
                 />
               </div>
             </div>
 
-            {/* 4. Car / Vehicle Registration Plate Number */}
+            {/* 4. Car Plate Number */}
             <div>
-              <label className="block text-xs font-bold text-slate-200 mb-1">
-                Car / Vehicle Plate No. * (गाड़ी का नंबर)
+              <label className="block text-xs font-black text-slate-900 mb-1">
+                Car / Vehicle Plate No. * (गाड़ी का नंबर)
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -171,14 +175,14 @@ export default function LoginPage() {
                   placeholder="e.g. HR 26 AB 1234"
                   value={plateNumber}
                   onChange={(e) => setPlateNumber(e.target.value.toUpperCase())}
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs font-mono font-black uppercase tracking-wider focus:outline-none focus:border-emerald-500"
+                  className="w-full pl-10 pr-3 h-12 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-mono font-black uppercase tracking-wider focus:outline-none focus:border-emerald-600 focus:bg-white"
                 />
               </div>
             </div>
 
-            {/* 5. Car Details (Optional) */}
+            {/* 5. Car Make/Model (Optional) */}
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">
+              <label className="block text-xs font-black text-slate-900 mb-1">
                 Car Make / Model (Optional - जैसे: White Honda City)
               </label>
               <input
@@ -186,7 +190,7 @@ export default function LoginPage() {
                 placeholder="e.g. White Honda City"
                 value={makeModel}
                 onChange={(e) => setMakeModel(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-emerald-500"
+                className="w-full px-3.5 h-12 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-bold focus:outline-none focus:border-emerald-600 focus:bg-white"
               />
             </div>
 
@@ -195,17 +199,19 @@ export default function LoginPage() {
               type="submit"
               variant="primary"
               size="lg"
-              className="w-full h-14 font-extrabold text-sm shadow-lg shadow-emerald-600/30"
+              className="w-full h-13 font-black text-sm rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20"
               isLoading={isLoading}
             >
-              Sign In to Resident Dashboard
-              <ArrowRight className="w-4 h-4 ml-1" />
+              Sign In to Resident Dashboard <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </form>
 
-          <div className="pt-2 border-t border-slate-800 text-center">
-            <Link href="/staff/login" className="text-xs font-bold text-rose-400 hover:underline flex items-center justify-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5" />
+          <div className="pt-2 border-t border-slate-100 text-center">
+            <Link
+              href="/staff/login"
+              className="text-xs font-extrabold text-slate-500 hover:text-rose-600 transition inline-flex items-center gap-1.5"
+            >
+              <ShieldCheck className="w-4 h-4 text-rose-500" />
               Security Guard / RWA Admin Login
             </Link>
           </div>

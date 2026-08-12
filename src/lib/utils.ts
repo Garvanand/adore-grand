@@ -9,8 +9,8 @@ export function cn(...inputs: ClassValue[]) {
  * Normalizes vehicle plate numbers to uppercase alphanumeric format.
  * E.g. "hr 85-ab 1234" -> "HR85AB1234"
  */
-export function normalizePlateNumber(plate: string): string {
-  if (!plate) return "";
+export function normalizePlateNumber(plate: any): string {
+  if (!plate || typeof plate !== "string") return "";
   return plate.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
 }
 

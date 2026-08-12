@@ -144,7 +144,7 @@ export function ImBlockedWorkflowModal({ isOpen, onClose }: ImBlockedModalProps)
 
         {/* STEP 1: VEHICLE NUMBER INPUT */}
         {step === 1 && (
-          <div className="space-y-4">
+          <div key="step-1" className="step-slide-enter space-y-4">
             <div className="space-y-1">
               <label className="block text-xs font-black text-slate-900 uppercase tracking-wider">
                 Step 1: Enter Vehicle Plate Number *

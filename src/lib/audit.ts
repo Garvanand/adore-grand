@@ -1,10 +1,10 @@
-import { connectToDatabase } from "@/lib/db/mongoose";
-import { AuditLog } from "@/lib/models/AuditLog";
+import { connectToDatabase } from "@/lib/mongodb";
+import { AuditLog } from "@/models/AuditLog";
 
 interface CreateAuditParams {
   actorId: string;
   action: string;
-  targetType: 'vehicle' | 'incident' | 'user';
+  targetType: "vehicle" | "incident" | "user" | "auth" | "system";
   targetId?: string;
   details?: Record<string, any>;
   ipAddress?: string;
@@ -19,9 +19,9 @@ export async function recordAuditLog(params: CreateAuditParams): Promise<void> {
       targetType: params.targetType,
       targetId: params.targetId,
       details: params.details || {},
-      ipAddress: params.ipAddress || '127.0.0.1',
+      ipAddress: params.ipAddress || "127.0.0.1",
     });
   } catch (error) {
-    console.error("Failed to record audit log:", error);
+    console.error("[AUDIT LOG ERROR] Failed to record audit log:", error);
   }
 }

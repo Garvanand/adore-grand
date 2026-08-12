@@ -1,12 +1,12 @@
 import React from "react";
 import { AdminCommandCenter } from "@/components/admin/AdminCommandCenter";
-import { Building2, ShieldCheck } from "lucide-react";
+import { Building2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default function AdminPage() {
   return (
-    <div className="space-y-6 py-2 max-w-7xl mx-auto">
+    <div className="space-y-6 py-2 max-w-7xl mx-auto page-enter">
       {/* Header Banner */}
       <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md">
         <div>

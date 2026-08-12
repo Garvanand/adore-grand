@@ -10,6 +10,13 @@ AdorePark is a modern, zero-cost, privacy-first parking coordination platform bu
 
 ---
 
+## 🆘 Technical Emergency Contact
+
+For technical emergencies, server outages, database issues, or app support, contact lead developer:
+- ✉️ **Technical Emergency Email**: [`garvanand03@gmail.com`](mailto:garvanand03@gmail.com)
+
+---
+
 ## ✨ Why AdorePark?
 
 In high-density residential societies, double-parking and driveway blockages occur daily. Traditional solutions require physical security guard interventions, loud shouting, or broadcasting unmasked phone numbers in public WhatsApp groups.
@@ -66,9 +73,7 @@ Direct 1-tap access to society duty personnel at [/emergency](file:///c:/Users/G
 - ⚡ **Mohit** *(Electrician)* — `9315273368`
 - 🛗 **Satish** *(Lift Maintenance Technician)* — `9565498118`
 - 📍 **Maintenance Office**: Located under Tower T7 / Gate 1 Entrance Security Desk.
-
-### 5. 🖨️ Printable QR Poster Generator
-Super Admin command center includes a high-resolution SVG poster generator to produce printable QR code signs for tower entryways, basement pillars, and gate barriers.
+- ✉️ **Tech Support**: `garvanand03@gmail.com`
 
 ---
 
@@ -128,20 +133,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | **Super Admin** | `garvanand03` | `Garv@516002` | `/admin` |
 | **Security Guard** | `guard_gate1` | `Guard@123456` | `/security` |
 | **Resident** | *1-Step Quick Sign-In* | *Zero Password* | `/dashboard` |
-
----
-
-## 🧪 Verification & Production Build
-
-AdorePark includes an automated 14-point flow verifier:
-
-```bash
-# Run production flow verifier
-npx tsx scripts/verify-production.ts
-
-# Run production build
-npm run build
-```
 
 ---
 

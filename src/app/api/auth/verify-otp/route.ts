@@ -4,18 +4,37 @@ import { User } from "@/models/User";
 import { signToken } from "@/lib/auth/jwt";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
 import { VerifyOtpSchema } from "@/lib/validators";
+import { isDevAuthAllowed } from "@/lib/env";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const parsed = VerifyOtpSchema.parse(body);
 
-    // Accept default test OTP 123456 in dev mode or valid check
-    if (parsed.otp !== "123456" && process.env.DEV_AUTH_MODE !== "false") {
-      return NextResponse.json(
-        { success: false, message: "Invalid OTP. Use test OTP 123456 in Dev Mode." },
-        { status: 400 }
-      );
+    const devAllowed = isDevAuthAllowed();
+
+    // 1. Strict Production Security: Dev test OTP 123456 is ONLY accepted when dev auth is enabled
+    if (parsed.otp === "123456") {
+      if (!devAllowed) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Dev test OTP is disabled in production environment. Real SMS gateway verification required.",
+          },
+          { status: 403 }
+        );
+      }
+    } else {
+      // Non-123456 OTP in dev mode check
+      if (devAllowed && parsed.otp !== "123456") {
+        return NextResponse.json(
+          { success: false, message: "Invalid OTP. Use test OTP 123456 in Development Mode." },
+          { status: 400 }
+        );
+      }
     }
 
     await connectToDatabase();

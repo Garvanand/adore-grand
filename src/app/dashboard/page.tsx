@@ -100,7 +100,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-8 py-2 max-w-6xl mx-auto">
+    <div className="space-y-8 py-2 max-w-6xl mx-auto page-enter">
       {/* Welcome Banner */}
       <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md">
         <div>
